@@ -1,12 +1,13 @@
 import type { Transaction } from "../types"
 import { deleteTransaction } from "../store"
+import { BiRegularPencil, BiRegularTrash } from "solid-icons/bi"
 
 interface TransactionRowProps {
   txn: Transaction
 }
 
 export const TransactionRow = (props: TransactionRowProps) => (
-  <tr class="">
+  <tr class="border-y-2">
     <td>
       {props.txn.amount.toLocaleString("en-us", {
         style: "currency",
@@ -18,17 +19,15 @@ export const TransactionRow = (props: TransactionRowProps) => (
     <td>{props.txn.account}</td>
     <td>{props.txn.description}</td>
     <td>
-      <button>edit</button>
-    </td>
-    <td>
       <button
         type="submit"
+        class="p-1 rounded bg-red-300"
         onClick={(e) => {
           e.preventDefault()
           deleteTransaction(props.txn.id)
         }}
       >
-        delete
+        <BiRegularTrash size={24} />
       </button>
     </td>
   </tr>

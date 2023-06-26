@@ -21,6 +21,8 @@
   },
   "dependencies": {
     "@types/uuid": "^9.0.2",
+    "lucide-solid": "^0.252.0",
+    "solid-icons": "^1.0.8",
     "solid-js": "^1.7.6",
     "uuid": "^9.0.0"
   }
