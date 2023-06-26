@@ -13,15 +13,14 @@ export interface Account {
 }
 
 export interface Envelope {
-  name: string
-  balance: number
+  allocated: number
 }
 
 export type Panel = "transactions" | "budget"
 
 export interface Store {
   transactions: Transaction[]
-  envelopes: Envelope[]
-  accounts: Account[]
+  envelopes: Record<string, Envelope>
+  accounts: string[]
   panel: Panel
 }

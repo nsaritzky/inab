@@ -1,7 +1,6 @@
 import type { Store, Transaction } from "./types"
 import { createStore } from "solid-js/store"
-import { TransactionRow } from "./components/transactionRow"
-import { AddTransactionForm } from "./components/newTransaction"
+import { Budget } from "./components/budget"
 import { TransactionView } from "./components/transactionView"
 import { Sidebar } from "./components/sidebar"
 import { v4 as uuid } from "uuid"
@@ -19,6 +18,9 @@ function App() {
       <Switch>
         <Match when={state.panel == "transactions"}>
           <TransactionView />
+        </Match>
+        <Match when={state.panel == "budget"}>
+          <Budget />
         </Match>
       </Switch>
     </div>

@@ -7,7 +7,12 @@ interface TransactionRowProps {
 
 export const TransactionRow = (props: TransactionRowProps) => (
   <tr class="">
-    <td>{props.txn.amount}</td>
+    <td>
+      {props.txn.amount.toLocaleString("en-us", {
+        style: "currency",
+        currency: "USD",
+      })}
+    </td>
     <td>{props.txn.date.getDate()}</td>
     <td>{props.txn.envelope}</td>
     <td>{props.txn.account}</td>
