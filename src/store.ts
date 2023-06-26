@@ -40,7 +40,7 @@ export const addTransaction = ({
     ...txns,
     { id: uuid(), amount, date, envelope, account, description },
   ])
-  if (!(envelope in Object.keys(state.envelopes))) {
+  if (!Object.keys(state.envelopes).includes(envelope)) {
     setState("envelopes", envelope, { allocated: 0 })
   }
 }
