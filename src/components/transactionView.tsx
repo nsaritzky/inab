@@ -10,7 +10,8 @@ export const TransactionView = () => (
         <thead>
           <tr class="text-left">
             <th class="">Amount</th>
-            <th>Time</th>
+            <th>Date</th>
+            <th>Payee</th>
             <th>Envelope</th>
             <th>Account</th>
             <th>Description</th>

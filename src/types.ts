@@ -1,6 +1,7 @@
 export interface Transaction {
   id: string
   description: string
+  payee: string
   amount: number
   envelope: string
   account: string

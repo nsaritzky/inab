@@ -3,6 +3,7 @@ import { addTransaction } from "../store"
 interface AddTransactionElement extends HTMLCollection {
   date: HTMLInputElement
   amount: HTMLInputElement
+  payee: HTMLInputElement
   envelope: HTMLInputElement
   account: HTMLInputElement
   description: HTMLInputElement
@@ -28,6 +29,15 @@ export const AddTransactionForm = () => (
           class="w-full"
           type="date"
           form="addTransaction"
+          value=""
+        />
+      </td>
+      <td>
+        <input
+          class="w-full"
+          form="addTransaction"
+          type="text"
+          name="payee"
           value=""
         />
       </td>
@@ -71,10 +81,17 @@ export const AddTransactionForm = () => (
             addTransaction({
               amount: -1 * Number.parseFloat(elements.amount.value),
               date: new Date(elements.date.value),
+              payee: elements.payee.value,
               envelope: elements.envelope.value,
               account: elements.account.value,
               description: elements.description.value,
             })
+            elements.amount.value = ""
+            elements.date.value = ""
+            elements.payee.value = ""
+            elements.envelope.value = ""
+            elements.account.value = ""
+            elements.description.value = ""
           }}
         >
           add

@@ -14,7 +14,8 @@ export const TransactionRow = (props: TransactionRowProps) => (
         currency: "USD",
       })}
     </td>
-    <td>{props.txn.date.getDate()}</td>
+    <td>{props.txn.date.toLocaleDateString()}</td>
+    <td>{props.txn.payee}</td>
     <td>{props.txn.envelope}</td>
     <td>{props.txn.account}</td>
     <td>{props.txn.description}</td>
