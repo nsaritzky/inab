@@ -1,5 +1,5 @@
 import type { Transaction } from "../types"
-import { deleteTransaction } from "../App"
+import { deleteTransaction } from "../store"
 
 interface TransactionRowProps {
   txn: Transaction

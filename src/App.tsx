@@ -6,46 +6,8 @@ import { TransactionView } from "./components/transactionView"
 import { Sidebar } from "./components/sidebar"
 import { v4 as uuid } from "uuid"
 import { Switch, Match } from "solid-js"
+import { state, setState, addTransaction } from "./store"
 import "solid-devtools"
-
-const sampleTxns: Transaction[] = [
-  {
-    id: "0",
-    description: "test",
-    amount: 1,
-    envelope: "Groceries",
-    account: "Checking",
-    date: new Date(),
-  },
-  {
-    id: "1",
-    description: "another test",
-    amount: 2,
-    envelope: "Rent",
-    account: "Checking",
-    date: new Date(),
-  },
-]
-export const [state, setState] = createStore<Store>({
-  transactions: sampleTxns,
-  envelopes: [],
-  accounts: [],
-  panel: "transactions",
-})
-
-export const addTransaction = ({
-  amount,
-  date,
-  envelope,
-  account,
-  description,
-}: Omit<Transaction, "id">) => {
-  console.log(description)
-  setState("transactions", (txns) => [
-    ...txns,
-    { id: uuid(), amount, date, envelope, account, description },
-  ])
-}
 
 export const deleteTransaction = (id: string) =>
   setState("transactions", (txns) => txns.filter((t) => t.id != id))

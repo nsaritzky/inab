@@ -1,4 +1,4 @@
-import { setState } from "../App"
+import { setState } from "../store"
 
 export const Sidebar = () => (
   <div class="fixed top-0 left-0 min-h-screen w-64">
@@ -7,7 +7,7 @@ export const Sidebar = () => (
         <button
           onClick={(e) => {
             e.preventDefault()
-            setState("panel", "transactions")
+            setState("panel", "budget")
           }}
         >
           Budget
@@ -17,7 +17,7 @@ export const Sidebar = () => (
         <button
           onClick={(e) => {
             e.preventDefault()
-            setState("panel", "budget")
+            setState("panel", "transactions")
           }}
         >
           Transactions

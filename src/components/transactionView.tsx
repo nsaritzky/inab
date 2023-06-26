@@ -1,5 +1,5 @@
 import { For } from "solid-js"
-import { state } from "../App"
+import { state } from "../store"
 import { AddTransactionForm } from "./newTransaction"
 import { TransactionRow } from "./transactionRow"
 

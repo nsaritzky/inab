@@ -1,4 +1,4 @@
-import { addTransaction } from "../App"
+import { addTransaction } from "../store"
 
 interface AddTransactionElement extends HTMLCollection {
   date: HTMLInputElement
