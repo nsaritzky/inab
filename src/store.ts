@@ -7,7 +7,7 @@ const sampleTxns: Transaction[] = [
   {
     id: "0",
     description: "test",
-    amount: 1,
+    amount: -1,
     envelope: "Groceries",
     account: "Checking",
     date: new Date(),
@@ -15,7 +15,7 @@ const sampleTxns: Transaction[] = [
   {
     id: "1",
     description: "another test",
-    amount: 2,
+    amount: -2,
     envelope: "Rent",
     account: "Checking",
     date: new Date(),
@@ -51,10 +51,10 @@ export const deleteTransaction = (id: string) =>
 export const envelopeBalances = createMemo(() => {
   const result: Record<string, number> = {}
   for (const nm of Object.keys(state.envelopes)) {
-    const spent = state.transactions
+    const activity = state.transactions
       .filter((txn) => txn.envelope == nm)
       .reduce((sum, txn) => sum + txn.amount, 0)
-    Object.assign(result, { [nm]: spent })
+    Object.assign(result, { [nm]: activity })
   }
   return result
 })

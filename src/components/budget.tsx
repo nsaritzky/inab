@@ -31,7 +31,7 @@ export const Budget = () => (
                   })}
                 </td>
                 <td>
-                  {(envlp.allocated - envelopeBalances()[nm]).toLocaleString(
+                  {(envlp.allocated + envelopeBalances()[nm]).toLocaleString(
                     "en-us",
                     {
                       style: "currency",

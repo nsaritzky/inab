@@ -69,7 +69,7 @@ export const AddTransactionForm = () => (
             )! as HTMLFormElement
             const elements = form.elements as AddTransactionElement
             addTransaction({
-              amount: Number.parseFloat(elements.amount.value),
+              amount: -1 * Number.parseFloat(elements.amount.value),
               date: new Date(elements.date.value),
               envelope: elements.envelope.value,
               account: elements.account.value,
