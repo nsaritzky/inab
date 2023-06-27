@@ -8,19 +8,38 @@ export interface Transaction {
   date: Date
 }
 
+export type Month =
+  | "JAN"
+  | "FEB"
+  | "MAR"
+  | "APR"
+  | "MAY"
+  | "JUN"
+  | "JUL"
+  | "AUG"
+  | "SEP"
+  | "OCT"
+  | "NOV"
+  | "DEC"
+
+type Year = number
+
+export type MonthYear = `${Month} ${Year}`
+
 export interface Account {
   name: string
   balance: number
 }
 
 export interface Envelope {
-  allocated: number
+  allocated: Record<MonthYear, number>
 }
 
 export type Panel = "transactions" | "budget"
 
 export interface Store {
   transactions: Transaction[]
+  currentMonth: MonthYear
   envelopes: Record<string, Envelope>
   accounts: string[]
   panel: Panel

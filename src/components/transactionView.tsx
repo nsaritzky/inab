@@ -2,6 +2,7 @@ import { For } from "solid-js"
 import { state } from "../store"
 import { AddTransactionForm } from "./newTransaction"
 import { TransactionRow } from "./transactionRow"
+import { dateToMonthYear } from "../utilities"
 
 export const TransactionView = () => (
   <div class="ml-64">
@@ -18,7 +19,7 @@ export const TransactionView = () => (
           </tr>
         </thead>
         <tbody>
-          <For each={Object.values(state.transactions)}>
+          <For each={state.transactions}>
             {(txn) => <TransactionRow txn={txn} />}
           </For>
           <AddTransactionForm />

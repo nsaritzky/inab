@@ -20,7 +20,7 @@ function App() {
           <TransactionView />
         </Match>
         <Match when={state.panel == "budget"}>
-          <Budget />
+          <Budget month={state.currentMonth} />
         </Match>
       </Switch>
     </div>
