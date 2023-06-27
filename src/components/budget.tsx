@@ -1,18 +1,20 @@
-import { Component, For } from "solid-js"
+import { Component, For, useContext } from "solid-js"
 import type { Month, MonthYear } from "../types"
-import { state, setState, envelopeBalances } from "../store"
 import MonthSelector from "./monthSelector"
+import { CentralStoreContext } from "../App"
 
 interface BudgetProps {
   month: MonthYear
 }
 
-const getAllocated = (my: MonthYear, envlp: string) =>
-  Object.keys(state.envelopes[envlp].allocated).includes(my)
-    ? state.envelopes[envlp].allocated[my]
-    : 0
-
 export const Budget: Component<BudgetProps> = (props) => {
+  const [state, { envelopeBalances }] = useContext(CentralStoreContext)
+
+  const getAllocated = (my: MonthYear, envlp: string) =>
+    Object.keys(state.envelopes[envlp].allocated).includes(my)
+      ? state.envelopes[envlp].allocated[my]
+      : 0
+
   return (
     <div class="ml-64">
       <div class="mt-4 ml-4">
