@@ -35,7 +35,7 @@ export const Budget: Component<BudgetProps> = (props) => {
           <tbody>
             <For each={Object.entries(state.envelopes)}>
               {([nm, envlp]) => (
-                <tr>
+                <tr class="p-2">
                   <td>{nm}</td>
                   <td>
                     {getAllocated(props.month, nm).toLocaleString("en-us", {

@@ -9,24 +9,24 @@ export const TransactionView = () => {
   return (
     <div class="ml-64">
       <div class="mt-4 ml-4  rounded">
-        <table class="table-fixed w-full border-collapse">
-          <thead>
-            <tr class="text-left">
-              <th class="w-20">Amount</th>
-              <th>Date</th>
-              <th>Payee</th>
-              <th>Envelope</th>
-              <th>Account</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
+        <div class="w-full">
+          <div>
+            <div class="flex text-left">
+              <div class="w-1/12">Amount</div>
+              <div class="w-1/6">Date</div>
+              <div class="w-1/6">Payee</div>
+              <div class="w-1/6">Envelope</div>
+              <div class="w-1/6">Account</div>
+              <div class="w-1/4">Description</div>
+            </div>
+          </div>
+          <div>
             <For each={state.transactions}>
               {(txn) => <TransactionRow txn={txn} />}
             </For>
             <AddTransactionForm />
-          </tbody>
-        </table>
+          </div>
+        </div>
       </div>
     </div>
   )

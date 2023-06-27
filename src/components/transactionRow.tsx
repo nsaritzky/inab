@@ -10,22 +10,22 @@ interface TransactionRowProps {
 export const TransactionRow = (props: TransactionRowProps) => {
   const [_, { deleteTransaction }] = useContext(CentralStoreContext)
   return (
-    <tr class="border-y-2">
-      <td>
+    <div class="flex py-1">
+      <div class="w-1/12">
         {props.txn.amount.toLocaleString("en-us", {
           style: "currency",
           currency: "USD",
-        })}
-      </td>
-      <td>{props.txn.date.toLocaleDateString()}</td>
-      <td>{props.txn.payee}</td>
-      <td>{props.txn.envelope}</td>
-      <td>{props.txn.account}</td>
-      <td>{props.txn.description}</td>
-      <td>
+        })}{" "}
+      </div>
+      <div class="w-1/6">{props.txn.date.toLocaleDateString()}</div>
+      <div class="w-1/6">{props.txn.payee}</div>
+      <div class="w-1/6">{props.txn.envelope}</div>
+      <div class="w-1/6">{props.txn.account}</div>
+      <div class="w-1/4">{props.txn.description}</div>
+      <div class="w-1/12">
         <button
           type="submit"
-          class="p-1 rounded bg-red-300"
+          class="rounded bg-red-300 p-1"
           onClick={(e) => {
             e.preventDefault()
             deleteTransaction(props.txn.id)
@@ -33,7 +33,7 @@ export const TransactionRow = (props: TransactionRowProps) => {
         >
           <BiRegularTrash size={24} />
         </button>
-      </td>
-    </tr>
+      </div>
+    </div>
   )
 }

@@ -17,92 +17,93 @@ export const AddTransactionForm = () => {
   return (
     <>
       <form id="addTransaction" />
-      <tr class="">
-        <td>
-          <input
-            name="amount"
-            class="w-full"
-            type="text"
-            value=""
-            pattern="\d+(\.\d{2})?|\.\d{2}"
-            form="addTransaction"
-          />
-        </td>
-        <td>
-          <input
-            name="date"
-            class="w-full"
-            type="date"
-            form="addTransaction"
-            value=""
-          />
-        </td>
-        <td>
-          <input
-            class="w-full"
-            form="addTransaction"
-            type="text"
-            name="payee"
-            value=""
-          />
-        </td>
-        <td>
-          <input
-            name="envelope"
-            class="w-full"
-            type="text"
-            value=""
-            form="addTransaction"
-          />
-        </td>
-        <td>
-          <input
-            name="account"
-            class="w-full"
-            type="text"
-            value=""
-            form="addTransaction"
-          />
-        </td>
-        <td>
-          <input
-            name="description"
-            class="w-full"
-            type="text"
-            value=""
-            form="addTransaction"
-          />
-        </td>
-        <td>
-          <button
-            type="submit"
-            form="addTransaction"
-            onClick={(e) => {
-              e.preventDefault()
-              const form = document.getElementById(
-                "addTransaction"
-              )! as HTMLFormElement
-              const elements = form.elements as AddTransactionElement
-              addTransaction(uuid, {
-                amount: -1 * Number.parseFloat(elements.amount.value),
-                date: new Date(elements.date.value),
-                payee: elements.payee.value,
-                envelope: elements.envelope.value,
-                account: elements.account.value,
-                description: elements.description.value,
-              })
-              elements.amount.value = ""
-              elements.date.value = ""
-              elements.payee.value = ""
-              elements.envelope.value = ""
-              elements.account.value = ""
-              elements.description.value = ""
-            }}
-          >
-            add
-          </button>
-        </td>
-      </tr>
+      <div>
+        <div class="box-border flex">
+          <div class="w-1/12 p-0.5">
+            <input
+              name="amount"
+              class="w-full flex-1"
+              type="text"
+              value=""
+              pattern="\d+(\.\d{2})?|\.\d{2}"
+              form="addTransaction"
+            />
+          </div>
+          <div class="w-1/6 p-0.5">
+            <input
+              name="date"
+              class="w-full"
+              type="date"
+              form="addTransaction"
+              value=""
+            />
+          </div>
+          <div class="w-1/6 p-0.5">
+            <input
+              class="w-full"
+              form="addTransaction"
+              type="text"
+              name="payee"
+              value=""
+            />
+          </div>
+          <div class="w-1/6 p-0.5">
+            <input
+              name="envelope"
+              class="w-full"
+              type="text"
+              value=""
+              form="addTransaction"
+            />
+          </div>
+          <div class="w-1/6 p-0.5">
+            <input
+              name="account"
+              class="w-full"
+              type="text"
+              value=""
+              form="addTransaction"
+            />
+          </div>
+          <div class="w-1/6 p-0.5">
+            <input
+              name="description"
+              class="w-full"
+              type="text"
+              value=""
+              form="addTransaction"
+            />
+          </div>
+        </div>
+        <button
+          type="submit"
+          form="addTransaction"
+          class="rounded border bg-blue-600 px-2 py-1 text-white"
+          onClick={(e) => {
+            e.preventDefault()
+            const form = document.getElementById(
+              "addTransaction"
+            )! as HTMLFormElement
+            const elements = form.elements as AddTransactionElement
+            addTransaction(uuid, {
+              amount: -1 * Number.parseFloat(elements.amount.value),
+              date: new Date(elements.date.value),
+              payee: elements.payee.value,
+              envelope: elements.envelope.value,
+              account: elements.account.value,
+              description: elements.description.value,
+            })
+            elements.amount.value = ""
+            elements.date.value = ""
+            elements.payee.value = ""
+            elements.envelope.value = ""
+            elements.account.value = ""
+            elements.description.value = ""
+          }}
+        >
+          Save
+        </button>
+      </div>
     </>
   )
 }
