@@ -1,5 +1,6 @@
 import { useContext } from "solid-js"
 import { CentralStoreContext } from "../App"
+import { v4 as uuid } from "uuid"
 
 interface AddTransactionElement extends HTMLCollection {
   date: HTMLInputElement
@@ -82,7 +83,7 @@ export const AddTransactionForm = () => {
                 "addTransaction"
               )! as HTMLFormElement
               const elements = form.elements as AddTransactionElement
-              addTransaction({
+              addTransaction(uuid, {
                 amount: -1 * Number.parseFloat(elements.amount.value),
                 date: new Date(elements.date.value),
                 payee: elements.payee.value,

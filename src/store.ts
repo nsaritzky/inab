@@ -25,7 +25,7 @@ const sampleTxns: Transaction[] = [
   },
 ]
 export const initialState: Store = {
-  transactions: sampleTxns,
+  transactions: [],
   accounts: [],
   currentMonth: "JUN 2023",
   unallocated: 0,
@@ -39,20 +39,23 @@ export const initialState: Store = {
 export const createCentralStore = () => {
   const [state, setState] = createStore(initialState)
 
-  const addTransaction = ({
-    amount,
-    date,
-    payee,
-    envelope,
-    account,
-    description,
-  }: Omit<Transaction, "id">) => {
+  const addTransaction = (
+    idFn: () => string,
+    {
+      amount,
+      date,
+      payee,
+      envelope,
+      account,
+      description,
+    }: Omit<Transaction, "id">
+  ) => {
     if (amount > 0) {
-      state.unallocated += amount
+      setState("unallocated", (old) => old + amount)
     }
     setState("transactions", (txns) => [
       ...txns,
-      { id: uuid(), amount, date, payee, envelope, account, description },
+      { id: idFn(), amount, date, payee, envelope, account, description },
     ])
     if (!Object.keys(state.envelopes).includes(envelope)) {
       setState("envelopes", envelope, { allocated: {} })

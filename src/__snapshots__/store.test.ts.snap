@@ -1,0 +1,66 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`addTransaction 1`] = `
+{
+  "accounts": [],
+  "currentMonth": "JUN 2023",
+  "envelopes": {
+    "": {
+      "allocated": {},
+    },
+    "Groceries": {
+      "allocated": {
+        "JUN 2023": 300,
+      },
+    },
+    "New": {
+      "allocated": {},
+    },
+    "Rent": {
+      "allocated": {
+        "JUN 2023": 1000,
+      },
+    },
+  },
+  "panel": "transactions",
+  "transactions": [
+    {
+      "account": "Checking",
+      "amount": -1,
+      "date": 2023-06-27T19:28:41.839Z,
+      "description": "test",
+      "envelope": "Groceries",
+      "id": "0",
+      "payee": "BuyMart",
+    },
+    {
+      "account": "Checking",
+      "amount": -2,
+      "date": 2023-06-27T19:28:41.839Z,
+      "description": "another test",
+      "envelope": "Rent",
+      "id": "1",
+      "payee": "Scrooge McDuck",
+    },
+    {
+      "account": "Checking",
+      "amount": -10,
+      "date": 2023-06-27T19:28:41.839Z,
+      "description": "another another test",
+      "envelope": "New",
+      "id": "2",
+      "payee": "Mr. F",
+    },
+    {
+      "account": "Checking",
+      "amount": 10,
+      "date": 2023-06-27T19:28:41.839Z,
+      "description": "credit",
+      "envelope": "",
+      "id": "3",
+      "payee": "",
+    },
+  ],
+  "unallocated": 10,
+}
+`;
