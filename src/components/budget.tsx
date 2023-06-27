@@ -1,6 +1,7 @@
 import { Component, For, useContext } from "solid-js"
 import type { Month, MonthYear } from "../types"
 import MonthSelector from "./monthSelector"
+import Unallocated from "./unallocated"
 import { CentralStoreContext } from "../App"
 
 interface BudgetProps {
@@ -18,7 +19,10 @@ export const Budget: Component<BudgetProps> = (props) => {
   return (
     <div class="ml-64">
       <div class="mt-4 ml-4">
-        <MonthSelector />
+        <div class="flex mb-2">
+          <MonthSelector />
+          <Unallocated />
+        </div>
         <table class="table-fixed w-full">
           <thead>
             <tr class="text-left">
