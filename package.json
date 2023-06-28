@@ -13,6 +13,7 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "@testing-library/jest-dom": "^5.16.5",
     "@vitest/coverage-v8": "^0.32.2",
     "autoprefixer": "^10.4.14",
     "eslint-plugin-solid": "^0.12.1",
@@ -28,6 +29,9 @@
     "vitest": "^0.32.2"
   },
   "dependencies": {
+    "@kobalte/core": "^0.9.7",
+    "@kobalte/tailwindcss": "^0.6.5",
+    "@modular-forms/solid": "^0.18.1",
     "@types/uuid": "^9.0.2",
     "lucide-solid": "^0.252.0",
     "solid-icons": "^1.0.8",

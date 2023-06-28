@@ -1,6 +1,14 @@
 import { Component, Setter, createSignal, useContext } from "solid-js"
 import { CentralStoreContext } from "../App"
 import { v4 as uuid } from "uuid"
+import {
+  SubmitHandler,
+  createForm,
+  pattern,
+  required,
+  setValue,
+} from "@modular-forms/solid"
+import { TextField } from "./TextField"
 
 interface AddTransactionFormProps {
   setEditingNewTransaction: Setter<boolean>
@@ -15,112 +23,126 @@ interface AddTransactionElement extends HTMLCollection {
   description: HTMLInputElement
 }
 
+type TransactionForm = {
+  amount: string
+  date: string
+  payee?: string | undefined
+  envelope: string
+  account: string
+  description?: string | undefined
+}
+
 export const AddTransactionForm: Component<AddTransactionFormProps> = (
   props
 ) => {
   const [_, { addTransaction }] = useContext(CentralStoreContext)
+  const [newTransactionFrom, { Form, Field }] = createForm<TransactionForm>({
+    initialValues: { date: new Date().toISOString().split("T")[0] },
+  })
+
+  const onSubmit: SubmitHandler<TransactionForm> = (values, _) => {
+    addTransaction(uuid, {
+      amount: -1 * parseFloat(values.amount),
+      date: new Date(values.date),
+      payee: values.payee || "",
+      envelope: values.envelope,
+      account: values.account,
+      description: values.description || "",
+    })
+    props.setEditingNewTransaction(false)
+  }
 
   return (
-    <>
-      <form
-        id="addTransaction"
-        onSubmit={(e) => {
-          e.preventDefault()
-          const form = document.getElementById(
-            "addTransaction"
-          )! as HTMLFormElement
-          const elements = form.elements as AddTransactionElement
-          addTransaction(uuid, {
-            amount: -1 * Number.parseFloat(elements.amount.value),
-            date: new Date(elements.date.value),
-            payee: elements.payee.value,
-            envelope: elements.envelope.value,
-            account: elements.account.value,
-            description: elements.description.value,
-          })
-          elements.amount.value = ""
-          elements.date.value = ""
-          elements.payee.value = ""
-          elements.envelope.value = ""
-          elements.account.value = ""
-          elements.description.value = ""
-          props.setEditingNewTransaction(false)
-        }}
-      />
-      <div>
-        <div class="box-border flex">
-          <div class="w-1/12 p-0.5">
-            <input
-              name="amount"
-              class="w-full flex-1"
+    <Form onSubmit={onSubmit} aria-label="Edit Transaction">
+      <div class="flex">
+        <Field
+          name="amount"
+          validate={[
+            required("Please enter an amount"),
+            pattern(/\d+|\d*\.\d{2}/, "Badly formatted amount"),
+          ]}
+        >
+          {(field, props) => (
+            <TextField
+              {...props}
+              placeholder="$0.00"
+              class="w-1/12 p-0.5"
               type="text"
-              value=""
-              form="addTransaction"
+              value={field.value}
+              error={field.error}
+              required
             />
-          </div>
-          <div class="w-1/6 p-0.5">
-            <input
-              name="date"
-              class="w-full"
+          )}
+        </Field>
+        <Field name="date">
+          {(field, props) => (
+            <TextField
+              {...props}
               type="date"
-              form="addTransaction"
-              value=""
+              class="w-1/6 p-0.5"
+              value={field.value}
+              error={field.error}
+              required
             />
-          </div>
-          <div class="w-1/6 p-0.5">
-            <input
-              class="w-full"
-              form="addTransaction"
-              type="text"
-              name="payee"
-              value=""
+          )}
+        </Field>
+        <Field name="payee">
+          {(field, props) => (
+            <TextField
+              {...props}
+              placeholder="Payee"
+              class="w-1/6 p-0.5"
+              value={field.value}
+              error={field.error}
             />
-          </div>
-          <div class="w-1/6 p-0.5">
-            <input
-              name="envelope"
-              class="w-full"
-              type="text"
-              value=""
-              form="addTransaction"
+          )}
+        </Field>
+        <Field name="envelope">
+          {(field, props) => (
+            <TextField
+              {...props}
+              placeholder="Envelope"
+              class="w-1/6 p-0.5"
+              value={field.value}
+              error={field.error}
             />
-          </div>
-          <div class="w-1/6 p-0.5">
-            <input
-              name="account"
-              class="w-full"
-              type="text"
-              value=""
-              form="addTransaction"
+          )}
+        </Field>
+        <Field name="account">
+          {(field, props) => (
+            <TextField
+              {...props}
+              placeholder="Account"
+              class="w-1/6 p-0.5"
+              value={field.value}
+              error={field.error}
             />
-          </div>
-          <div class="w-1/6 p-0.5">
-            <input
-              name="description"
-              class="w-full"
-              type="text"
-              value=""
-              form="addTransaction"
+          )}
+        </Field>
+        <Field name="description">
+          {(field, props) => (
+            <TextField
+              {...props}
+              placeholder="Description"
+              class="w-1/6 p-0.5"
+              value={field.value}
+              error={field.error}
             />
-          </div>
-        </div>
-        <button
-          class="mr-4 rounded border border-blue-600 px-2 py-1"
-          onClick={(e) => {
-            e.preventDefault()
-            props.setEditingNewTransaction(false)
-          }}
-        >
-          cancel
-        </button>
-        <button
-          type="submit"
-          form="addTransaction"
-          class="rounded border bg-blue-600 px-2 py-1 text-white"
-        >
-          Save
-        </button>
+          )}
+        </Field>
       </div>
-    </>
+      <button
+        class="mr-4 rounded border border-blue-600 px-2 py-1"
+        onClick={() => props.setEditingNewTransaction(false)}
+      >
+        Cancel
+      </button>
+      <button
+        class="rounded border bg-blue-600 px-2 py-1 text-white"
+        type="submit"
+      >
+        Save
+      </button>
+    </Form>
   )
 }
