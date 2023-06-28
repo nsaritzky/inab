@@ -3,6 +3,7 @@ import type { Month, MonthYear } from "../types"
 import MonthSelector from "./monthSelector"
 import Unallocated from "./unallocated"
 import { CentralStoreContext } from "../App"
+import { BudgetRow } from "./BudgetRow"
 
 interface BudgetProps {
   month: MonthYear
@@ -18,12 +19,12 @@ export const Budget: Component<BudgetProps> = (props) => {
 
   return (
     <div class="ml-64">
-      <div class="mt-4 ml-4">
-        <div class="flex mb-2">
+      <div class="ml-4 mt-4">
+        <div class="mb-2 flex">
           <MonthSelector />
           <Unallocated />
         </div>
-        <table class="table-fixed w-full">
+        <table class="w-full table-fixed">
           <thead>
             <tr class="text-left">
               <th>Category</th>
@@ -34,30 +35,12 @@ export const Budget: Component<BudgetProps> = (props) => {
           </thead>
           <tbody>
             <For each={Object.entries(state.envelopes)}>
-              {([nm, envlp]) => (
-                <tr class="p-2">
-                  <td>{nm}</td>
-                  <td>
-                    {getAllocated(props.month, nm).toLocaleString("en-us", {
-                      style: "currency",
-                      currency: "USD",
-                    })}
-                  </td>
-                  <td>
-                    {envelopeBalances()[nm].toLocaleString("en-us", {
-                      style: "currency",
-                      currency: "USD",
-                    })}
-                  </td>
-                  <td>
-                    {(
-                      getAllocated(props.month, nm) + envelopeBalances()[nm]
-                    ).toLocaleString("en-us", {
-                      style: "currency",
-                      currency: "USD",
-                    })}
-                  </td>
-                </tr>
+              {([name, envlp]) => (
+                <BudgetRow
+                  name={name}
+                  envlp={envlp}
+                  allocated={getAllocated(state.currentMonth, name)}
+                />
               )}
             </For>
           </tbody>

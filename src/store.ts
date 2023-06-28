@@ -65,6 +65,12 @@ export const createCentralStore = () => {
   const deleteTransaction = (id: string) =>
     setState("transactions", (txns) => txns.filter((t) => t.id != id))
 
+  const setAllocated = (envelope: string, my: MonthYear, value: number) => {
+    const oldValue = state.envelopes[envelope].allocated[my]
+    setState("envelopes", envelope, "allocated", my, value)
+    setState("unallocated", (old) => old - value + oldValue)
+  }
+
   const envelopeBalances = createMemo(() => {
     const result: Record<string, number> = {}
     for (const nm of Object.keys(state.envelopes)) {
@@ -181,6 +187,7 @@ export const createCentralStore = () => {
   return [
     state,
     {
+      setAllocated,
       addTransaction,
       deleteTransaction,
       envelopeBalances,
