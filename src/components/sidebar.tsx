@@ -11,11 +11,11 @@ export const Sidebar = () => {
 
   const NavButton: ParentComponent<navButtonProps> = (props) => (
     <button
-      class={`p-4 font-bold ${
+      class={`mx-4 my-2 p-2 font-bold ${
         store.panel == props.panel
           ? "bg-blue-400 hover:bg-blue-500"
           : "hover:bg-gray-400"
-      } w-full text-left`}
+      } w-56 rounded text-left`}
       onClick={(e) => {
         e.preventDefault
         setPanel(props.panel)
@@ -26,7 +26,7 @@ export const Sidebar = () => {
   )
 
   return (
-    <div class="fixed top-0 left-0 min-h-screen w-64 bg-gray-200">
+    <div class="fixed left-0 top-0 box-border min-h-screen w-64 bg-gray-200">
       <ul>
         <li>
           <NavButton panel="budget">Budget</NavButton>

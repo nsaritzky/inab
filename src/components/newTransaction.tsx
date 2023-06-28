@@ -132,13 +132,13 @@ export const AddTransactionForm: Component<AddTransactionFormProps> = (
         </Field>
       </div>
       <button
-        class="mr-4 rounded border border-blue-600 px-2 py-1"
+        class="mr-4 w-20 rounded border border-blue-600 px-2 py-1"
         onClick={() => props.setEditingNewTransaction(false)}
       >
         Cancel
       </button>
       <button
-        class="rounded border bg-blue-600 px-2 py-1 text-white"
+        class="w-20 rounded border bg-blue-600 px-2 py-1 text-white"
         type="submit"
       >
         Save
