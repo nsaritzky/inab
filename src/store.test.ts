@@ -11,7 +11,7 @@ const sampleTxns = [
     payee: "BuyMart",
     envelope: "Groceries",
     account: "Checking",
-    date: new Date(),
+    date: new Date(Date.parse("2023-06-28")),
   },
   {
     description: "another test",
@@ -19,7 +19,7 @@ const sampleTxns = [
     payee: "Scrooge McDuck",
     envelope: "Rent",
     account: "Checking",
-    date: new Date(),
+    date: new Date(Date.parse("2023-06-30")),
   },
   {
     description: "another another test",
@@ -27,7 +27,7 @@ const sampleTxns = [
     payee: "Mr. F",
     envelope: "New",
     account: "Checking",
-    date: new Date(),
+    date: new Date(Date.parse("2023-06-23")),
   },
   {
     description: "credit",
@@ -35,7 +35,7 @@ const sampleTxns = [
     payee: "",
     envelope: "",
     account: "Checking",
-    date: new Date(),
+    date: new Date(Date.parse("2023-06-25")),
   },
 ]
 
