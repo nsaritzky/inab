@@ -11,7 +11,7 @@ const MonthSelector: Component = () => {
   const [state, { setDecMonth, setIncMonth }] = useContext(CentralStoreContext)
 
   return (
-    <div class="flex">
+    <div class="align-center flex h-8">
       <button
         onClick={(e) => {
           e.preventDefault()
@@ -20,7 +20,7 @@ const MonthSelector: Component = () => {
       >
         <FiChevronLeft size={24} />
       </button>
-      <span>{state.currentMonth}</span>
+      <div class="w-20">{state.currentMonth}</div>
       <button
         onClick={(e) => {
           e.preventDefault()

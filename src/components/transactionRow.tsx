@@ -21,7 +21,7 @@ export const TransactionRow = (props: TransactionRowProps) => {
       <div class="w-1/6">{props.txn.payee}</div>
       <div class="w-1/6">{props.txn.envelope}</div>
       <div class="w-1/6">{props.txn.account}</div>
-      <div class="w-1/4">{props.txn.description}</div>
+      <div class="w-1/6">{props.txn.description}</div>
       <div class="w-1/12">
         <button
           type="submit"
