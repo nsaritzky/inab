@@ -66,7 +66,7 @@ export const createCentralStore = () => {
     setState("transactions", (txns) => txns.filter((t) => t.id != id))
 
   const setAllocated = (envelope: string, my: MonthYear, value: number) => {
-    const oldValue = state.envelopes[envelope].allocated[my]
+    const oldValue: number = state.envelopes[envelope].allocated[my] || 0
     setState("envelopes", envelope, "allocated", my, value)
     setState("unallocated", (old) => old - value + oldValue)
   }

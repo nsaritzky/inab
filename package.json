@@ -32,6 +32,8 @@
     "@kobalte/core": "^0.9.7",
     "@kobalte/tailwindcss": "^0.6.5",
     "@modular-forms/solid": "^0.18.1",
+    "@solid-primitives/storage": "^1.3.11",
+    "@thisbeyond/solid-select": "^0.14.0",
     "@types/uuid": "^9.0.2",
     "lucide-solid": "^0.252.0",
     "solid-icons": "^1.0.8",

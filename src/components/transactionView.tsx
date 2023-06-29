@@ -11,7 +11,7 @@ export const TransactionView = () => {
 
   return (
     <div class="ml-64 w-full">
-      <div class="ml-4 mt-4">
+      <div class="ml-4 mt-4 text-sm">
         <button
           onClick={(e) => {
             e.preventDefault()
@@ -22,8 +22,8 @@ export const TransactionView = () => {
             <AiOutlinePlusCircle size={24} /> Add transaction
           </div>
         </button>
-        <div class="w-full">
-          <div class="flex text-left">
+        <div class="w-full divide-y">
+          <div class="flex  text-left">
             <div class="w-1/12">Amount</div>
             <div class="w-1/6">Date</div>
             <div class="w-1/6">Payee</div>
@@ -31,7 +31,7 @@ export const TransactionView = () => {
             <div class="w-1/6">Account</div>
             <div class="w-1/4">Description</div>
           </div>
-          <div>
+          <div class="divide-y">
             <For each={state.transactions}>
               {(txn) => <TransactionRow txn={txn} />}
             </For>

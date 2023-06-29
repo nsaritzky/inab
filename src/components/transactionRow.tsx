@@ -10,7 +10,7 @@ interface TransactionRowProps {
 export const TransactionRow = (props: TransactionRowProps) => {
   const [_, { deleteTransaction }] = useContext(CentralStoreContext)
   return (
-    <div class="flex py-1">
+    <div class="mb-1 flex pt-1">
       <div class="w-1/12">
         {props.txn.amount.toLocaleString("en-us", {
           style: "currency",
@@ -31,7 +31,7 @@ export const TransactionRow = (props: TransactionRowProps) => {
             deleteTransaction(props.txn.id)
           }}
         >
-          <BiRegularTrash size={24} />
+          <BiRegularTrash size={14} />
         </button>
       </div>
     </div>
