@@ -11,7 +11,7 @@ export const TransactionView = () => {
   const [editingNewTransaction, setEditingNewTransaction] = createSignal(false)
 
   return (
-    <div class="ml-64 w-full">
+    <div class="ml-64 w-auto">
       <div class="ml-4 mt-4 text-sm">
         <button
           onClick={(e) => {
@@ -23,15 +23,15 @@ export const TransactionView = () => {
             <AiOutlinePlusCircle size={24} /> Add transaction
           </div>
         </button>
-        <div class="table w-full divide-y">
+        <div class="table w-auto table-fixed divide-y">
           <div class="flex table-header-group text-left">
-            <div class="table-cell w-20 ">Inflow</div>
-            <div class="table-cell w-20">Outflow</div>
+            <div class="table-cell w-14">Inflow</div>
+            <div class="table-cell w-14">Outflow</div>
             <div class="table-cell w-24">Date</div>
-            <div class="table-cell ">Payee</div>
-            <div class="table-cell ">Envelope</div>
+            <div class="table-cell w-20">Payee</div>
+            <div class="table-cell w-36">Envelope</div>
             <div class="table-cell w-20">Account</div>
-            <div class="table-cell ">Description</div>
+            <div class="table-cell w-20">Description</div>
           </div>
           <For
             each={sort(

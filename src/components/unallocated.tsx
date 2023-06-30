@@ -7,20 +7,22 @@ const Unallocated = () => {
   const overAllocated = () => state.unallocated < 0
 
   return (
-    <div
-      class={`mx-auto ${
-        overAllocated()
-          ? "bg-red-300"
-          : allAllocated()
-          ? "bg-gray-300"
-          : "bg-green-300"
-      } rounded p-4`}
-    >
-      Unallocated:{" "}
-      {state.unallocated.toLocaleString("en-us", {
-        style: "currency",
-        currency: "USD",
-      })}
+    <div class="flex-1">
+      <div
+        class={`mx-auto w-max ${
+          overAllocated()
+            ? "bg-red-300"
+            : allAllocated()
+            ? "bg-gray-300"
+            : "bg-green-300"
+        } rounded p-4`}
+      >
+        Unallocated:{" "}
+        {state.unallocated.toLocaleString("en-us", {
+          style: "currency",
+          currency: "USD",
+        })}
+      </div>
     </div>
   )
 }

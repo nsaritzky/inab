@@ -6,6 +6,7 @@ type TextFieldProps = {
   type?: "text" | "email" | "tel" | "password" | "url" | "date" | undefined
   label?: string | undefined
   class?: string
+  inputClass?: string
   placeholder?: string | undefined
   value: string | undefined
   error: string
@@ -35,7 +36,11 @@ export function TextField(props: TextFieldProps) {
       <Show
         when={props.multiline}
         fallback={
-          <Kobalte.Input {...inputProps} class="w-full" type={props.type} />
+          <Kobalte.Input
+            {...inputProps}
+            class={props.inputClass + " w-full"}
+            type={props.type}
+          />
         }
       >
         <Kobalte.TextArea {...inputProps} autoResize />

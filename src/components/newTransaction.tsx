@@ -73,7 +73,7 @@ export const AddTransactionForm: Component<AddTransactionFormProps> = (
             onSubmit={onSubmit}
             aria-label="Edit Transaction"
             id="Edit Transaction"
-            class="mt-1 table-row"
+            class="mt-1 table-row text-xs"
             use: clickOutside={() => {
                 console.log("clickOutside")
                 props.setEditingNewTransaction(false)
@@ -89,7 +89,8 @@ export const AddTransactionForm: Component<AddTransactionFormProps> = (
                     <TextField
                         {...props}
                         placeholder="$0.00"
-                        class="table-cell  p-0.5"
+                        class="table-cell p-1 outline-none"
+                      inputClass=" rounded p-1 border border-1 outline-none"
                         type="text"
                         onInput={(e) => { setValue(newTransactionForm, "outflow", "")
                         setValue(newTransactionForm, "inflow", e.currentTarget.value)}}
@@ -108,7 +109,8 @@ export const AddTransactionForm: Component<AddTransactionFormProps> = (
                     <TextField
                         {...props}
                         placeholder="$0.00"
-                        class="table-cell  p-0.5"
+                        class="table-cell  p-1"
+                        inputClass=" rounded p-1 border border-1 outline-none"
                         type="text"
                         onInput={(e) => {
                             setValue(newTransactionForm, "inflow", "")
@@ -124,7 +126,9 @@ export const AddTransactionForm: Component<AddTransactionFormProps> = (
                     <TextField
                         {...props}
                         type="date"
-                        class="table-cell  p-0.5"
+                        inputClass="rounded p-1 border border-1 outline-none"
+
+                        class="table-cell  p-1"
                         value={field.value}
                         error={field.error}
                         required
@@ -136,7 +140,9 @@ export const AddTransactionForm: Component<AddTransactionFormProps> = (
                     <TextField
                         {...props}
                         placeholder="Payee"
-                        class="table-cell p-0.5"
+                        inputClass="p-1 rounded border border-1 outline-none"
+
+                        class="table-cell p-1"
                         value={field.value}
                         error={field.error}
                     />
@@ -147,6 +153,7 @@ export const AddTransactionForm: Component<AddTransactionFormProps> = (
                     <SelectField
                         {...props}
                         class="table-cell"
+                        placeholder="Envelope"
                         choices={Object.keys(state.envelopes)}
                         error={field.error}
                         disabled={getValue(newTransactionForm, "inflow") != ""}
@@ -160,7 +167,9 @@ export const AddTransactionForm: Component<AddTransactionFormProps> = (
                     <TextField
                         {...props}
                         placeholder="Account"
-                        class="table-cell p-0.5"
+                        inputClass=" rounded p-1 border border-1 outline-none"
+
+                        class="table-cell p-1"
                         value={field.value}
                         error={field.error}
                     />
@@ -171,7 +180,9 @@ export const AddTransactionForm: Component<AddTransactionFormProps> = (
                     <TextField
                         {...props}
                         placeholder="Description"
-                        class="table-cell  p-0.5"
+                        inputClass="p-1 rounded  border border-1 outline-none"
+
+                        class="table-cell  p-1"
                         value={field.value}
                         error={field.error}
                     />

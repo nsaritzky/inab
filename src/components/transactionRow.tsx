@@ -10,7 +10,7 @@ interface TransactionRowProps {
 export const TransactionRow = (props: TransactionRowProps) => {
   const [_, { deleteTransaction }] = useContext(CentralStoreContext)
   return (
-    <div class="mb-1 table-row pt-1">
+    <div class="mb-1 table-row pt-1 text-xs">
       <div class="table-cell ">
         {props.txn.amount > 0 &&
           props.txn.amount.toLocaleString("en-us", {

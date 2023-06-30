@@ -2,8 +2,7 @@ export interface Transaction {
   id: string
   description: string
   payee: string
-  inflow: number
-  outflow: number
+  amount: number
   envelope: string
   account: string
   date: Date
@@ -34,6 +33,7 @@ export interface Account {
 
 export interface Envelope {
   allocated: Record<MonthYear, number>
+  monthlyGoal: Record<MonthYear, number>
 }
 
 export type Panel = "transactions" | "budget"

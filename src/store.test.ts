@@ -7,7 +7,8 @@ import { createRoot } from "solid-js"
 const sampleTxns = [
   {
     description: "test",
-    amount: -1,
+    outflow: 1,
+    inflow: 0,
     payee: "BuyMart",
     envelope: "Groceries",
     account: "Checking",
@@ -15,7 +16,8 @@ const sampleTxns = [
   },
   {
     description: "another test",
-    amount: -2,
+    outflow: 2,
+    inflow: 0,
     payee: "Scrooge McDuck",
     envelope: "Rent",
     account: "Checking",
@@ -23,7 +25,8 @@ const sampleTxns = [
   },
   {
     description: "another another test",
-    amount: -10,
+    outflow: 10,
+    inflow: 0,
     payee: "Mr. F",
     envelope: "New",
     account: "Checking",
@@ -31,7 +34,8 @@ const sampleTxns = [
   },
   {
     description: "credit",
-    amount: 10,
+    outflow: 0,
+    inflow: 10,
     payee: "",
     envelope: "",
     account: "Checking",

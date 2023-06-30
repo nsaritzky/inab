@@ -30,8 +30,8 @@ export const initialState: Store = {
   currentMonth: "JUN 2023",
   unallocated: 0,
   envelopes: {
-    Rent: { allocated: { "JUN 2023": 1000 } },
-    Groceries: { allocated: { "JUN 2023": 300 } },
+    Rent: { allocated: { "JUN 2023": 1000 }, monthlyGoal: {} },
+    Groceries: { allocated: { "JUN 2023": 300 }, monthlyGoal: {} },
   },
   panel: "transactions",
 }

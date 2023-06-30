@@ -12,6 +12,7 @@ exports[`addTransaction 1`] = `
       "allocated": {
         "JUN 2023": 300,
       },
+      "monthlyGoal": {},
     },
     "New": {
       "allocated": {},
@@ -20,6 +21,7 @@ exports[`addTransaction 1`] = `
       "allocated": {
         "JUN 2023": 1000,
       },
+      "monthlyGoal": {},
     },
   },
   "panel": "transactions",
