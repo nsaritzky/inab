@@ -10,19 +10,27 @@ interface TransactionRowProps {
 export const TransactionRow = (props: TransactionRowProps) => {
   const [_, { deleteTransaction }] = useContext(CentralStoreContext)
   return (
-    <div class="mb-1 flex pt-1">
-      <div class="w-1/12">
-        {props.txn.amount.toLocaleString("en-us", {
-          style: "currency",
-          currency: "USD",
-        })}{" "}
+    <div class="mb-1 table-row pt-1">
+      <div class="table-cell ">
+        {props.txn.amount > 0 &&
+          props.txn.amount.toLocaleString("en-us", {
+            style: "currency",
+            currency: "USD",
+          })}{" "}
       </div>
-      <div class="w-1/6">{props.txn.date.toLocaleDateString()}</div>
-      <div class="w-1/6">{props.txn.payee}</div>
-      <div class="w-1/6">{props.txn.envelope}</div>
-      <div class="w-1/6">{props.txn.account}</div>
-      <div class="w-1/6">{props.txn.description}</div>
-      <div class="w-1/12">
+      <div class="table-cell ">
+        {props.txn.amount < 0 &&
+          props.txn.amount.toLocaleString("en-us", {
+            style: "currency",
+            currency: "USD",
+          })}{" "}
+      </div>
+      <div class="table-cell ">{props.txn.date.toLocaleDateString()}</div>
+      <div class="table-cell ">{props.txn.payee}</div>
+      <div class="table-cell ">{props.txn.envelope}</div>
+      <div class="table-cell ">{props.txn.account}</div>
+      <div class="table-cell ">{props.txn.description}</div>
+      <div class="table-cell ">
         <button
           type="submit"
           class="rounded bg-red-300 p-1"

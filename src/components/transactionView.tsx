@@ -4,6 +4,7 @@ import { TransactionRow } from "./transactionRow"
 import { dateToMonthYear } from "../utilities"
 import { AiOutlinePlusCircle } from "solid-icons/ai"
 import { CentralStoreContext } from "../App"
+import { sort } from "@solid-primitives/signal-builders"
 
 export const TransactionView = () => {
   const [state, _] = useContext(CentralStoreContext)
@@ -22,25 +23,29 @@ export const TransactionView = () => {
             <AiOutlinePlusCircle size={24} /> Add transaction
           </div>
         </button>
-        <div class="w-full divide-y">
-          <div class="flex  text-left">
-            <div class="w-1/12">Amount</div>
-            <div class="w-1/6">Date</div>
-            <div class="w-1/6">Payee</div>
-            <div class="w-1/6">Envelope</div>
-            <div class="w-1/6">Account</div>
-            <div class="w-1/4">Description</div>
+        <div class="table w-full divide-y">
+          <div class="flex table-header-group text-left">
+            <div class="table-cell w-20 ">Inflow</div>
+            <div class="table-cell w-20">Outflow</div>
+            <div class="table-cell w-24">Date</div>
+            <div class="table-cell ">Payee</div>
+            <div class="table-cell ">Envelope</div>
+            <div class="table-cell w-20">Account</div>
+            <div class="table-cell ">Description</div>
           </div>
-          <div class="divide-y">
-            <For each={state.transactions}>
-              {(txn) => <TransactionRow txn={txn} />}
-            </For>
-            <Show when={editingNewTransaction()}>
-              <AddTransactionForm
-                setEditingNewTransaction={setEditingNewTransaction}
-              />
-            </Show>
-          </div>
+          <For
+            each={sort(
+              state.transactions,
+              (a, b) => b.date.getDate() - a.date.getDate()
+            )()}
+          >
+            {(txn) => <TransactionRow txn={txn} />}
+          </For>
+          <Show when={editingNewTransaction()}>
+            <AddTransactionForm
+              setEditingNewTransaction={setEditingNewTransaction}
+            />
+          </Show>
         </div>
       </div>
     </div>

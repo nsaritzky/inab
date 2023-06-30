@@ -42,14 +42,16 @@ export const createCentralStore = () => {
   const addTransaction = (
     idFn: () => string,
     {
-      amount,
+      inflow,
+      outflow,
       date,
       payee,
       envelope,
       account,
       description,
-    }: Omit<Transaction, "id">
+    }: Omit<Transaction, "id" | "amount"> & { inflow: number; outflow: number }
   ) => {
+    const amount = inflow - outflow
     if (amount > 0) {
       setState("unallocated", (old) => old + amount)
     }

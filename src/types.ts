@@ -2,7 +2,8 @@ export interface Transaction {
   id: string
   description: string
   payee: string
-  amount: number
+  inflow: number
+  outflow: number
   envelope: string
   account: string
   date: Date
