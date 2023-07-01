@@ -12,7 +12,7 @@ interface BudgetRowProps {
 
 export const BudgetRow = (props: BudgetRowProps) => {
   let inputRef: HTMLInputElement
-  const [state, { envelopeBalances, allocate }] =
+  const [state, { envelopeBalances, netBalance, allocate }] =
     useContext(CentralStoreContext)
   const [editing, setEditing] = createSignal(false)
 
@@ -80,13 +80,10 @@ export const BudgetRow = (props: BudgetRowProps) => {
         })}
       </td>
       <td>
-        {(props.allocated + envelopeBalances()[props.name]).toLocaleString(
-          "en-us",
-          {
-            style: "currency",
-            currency: "USD",
-          }
-        )}
+        {netBalance()[props.name][state.currentMonth].toLocaleString("en-us", {
+          style: "currency",
+          currency: "USD",
+        })}
       </td>
     </tr>
   )

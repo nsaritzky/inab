@@ -96,6 +96,32 @@ export const createCentralStore = () => {
     return result
   })
 
+  const monthlyBalances = createMemo(() =>
+    Object.fromEntries(
+      Object.entries(state.envelopes).map(([nm, envlp]) => [
+        nm,
+        envlp.allocated.map(
+          (x, i) =>
+            x +
+            state.transactions
+              .filter((txn) => dateToIndex(txn.date) == i && txn.envelope == nm)
+              .reduce((sum, txn) => sum + txn.amount, 0)
+        ),
+      ])
+    )
+  )
+
+  const netBalance = createMemo(() =>
+    Object.fromEntries(
+      Object.entries(monthlyBalances()).map(([nm, balances]) => [
+        nm,
+        balances.map((_, i) =>
+          balances.slice(0, i + 1).reduce((a, b) => a + b, 0)
+        ),
+      ])
+    )
+  )
+
   const accountBalances = createMemo(() => {
     const result: Record<string, number> = {}
     for (const nm of state.accounts) {
@@ -125,6 +151,8 @@ export const createCentralStore = () => {
       addTransaction,
       deleteTransaction,
       envelopeBalances,
+      monthlyBalances,
+      netBalance,
       accountBalances,
       setIncMonth,
       setDecMonth,

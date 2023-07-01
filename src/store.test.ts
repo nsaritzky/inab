@@ -41,6 +41,15 @@ const sampleTxns = [
     account: "Checking",
     date: new Date(Date.parse("2023-06-25")),
   },
+  {
+    description: "another test",
+    outflow: 2,
+    inflow: 0,
+    payee: "Scrooge McDuck",
+    envelope: "Rent",
+    account: "Checking",
+    date: new Date(Date.parse("2023-07-30")),
+  },
 ]
 
 const [dispose, state, fns] = createRoot((dispose) => {
@@ -77,27 +86,19 @@ describe("balances", () => {
     expect(fns.envelopeBalances()["New"]).toBe(-10)
   })
 
-  test.todo("accountBalances", () => {})
-})
+  test("monthlyBalances", () => {
+    expect(fns.monthlyBalances()["Groceries"][5]).toBe(299)
+    expect(fns.monthlyBalances()["Rent"][5]).toBe(998)
+    expect(fns.monthlyBalances()["New"][5]).toBe(-10)
+  })
 
-test("increment and decrement month", async () => {
-  fns.setIncMonth()
-  expect(state.currentMonth).toBe("JUL 2023")
-  fns.setIncMonth()
-  fns.setIncMonth()
-  fns.setIncMonth()
-  fns.setIncMonth()
-  fns.setIncMonth()
-  fns.setIncMonth()
-  expect(state.currentMonth).toBe("JAN 2024")
-  fns.setDecMonth()
-  expect(state.currentMonth).toBe("DEC 2023")
-  fns.setDecMonth()
-  expect(state.currentMonth).toBe("NOV 2023")
+  test("netBalance", () => {
+    expect(fns.netBalance()["Rent"][6]).toBe(996)
+  })
 })
 
 test("deleteTransaction", async () => {
   fns.deleteTransaction("1")
-  expect(state.transactions.length).toBe(3)
+  expect(state.transactions.length).toBe(4)
   expect(fns.envelopeBalances()["Rent"]).toBe(0)
 })

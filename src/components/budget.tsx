@@ -1,4 +1,4 @@
-import { Component, For, createSignal, useContext } from "solid-js"
+import { Component, For, Show, createSignal, useContext } from "solid-js"
 import type { Month, MonthYear } from "../types"
 import MonthSelector from "./monthSelector"
 import Unallocated from "./unallocated"
@@ -6,12 +6,11 @@ import { CentralStoreContext } from "../App"
 import { BudgetRow } from "./BudgetRow"
 import { BudgetInspector } from "./BudgetInspector"
 
-interface BudgetProps {
-  month: MonthYear
-}
+interface BudgetProps {}
 
 export const Budget: Component<BudgetProps> = (props) => {
-  const [state, { envelopeBalances }] = useContext(CentralStoreContext)
+  const [state, { envelopeBalances, netBalance }] =
+    useContext(CentralStoreContext)
   const [activeEnvelope, setActiveEnvelope] = createSignal<string>()
 
   const getAllocated = (monthIndex: number, envlp: string) =>
@@ -51,7 +50,9 @@ export const Budget: Component<BudgetProps> = (props) => {
             </table>
           </div>
           <div class="w-1/3 border">
-            <BudgetInspector activeEnvelope={activeEnvelope} />
+            <Show when={activeEnvelope()}>
+              <BudgetInspector activeEnvelope={activeEnvelope} />
+            </Show>
           </div>
         </div>
       </div>

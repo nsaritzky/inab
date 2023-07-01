@@ -6,7 +6,7 @@ interface BudgetInspectorProps {
 }
 
 export const BudgetInspector = (props: BudgetInspectorProps) => {
-  const [store, {}] = useContext(CentralStoreContext)
+  const [store, { netBalance }] = useContext(CentralStoreContext)
   const envelopeBalance = () => {
     const envlp = props.activeEnvelope()
     return envlp
@@ -21,7 +21,7 @@ export const BudgetInspector = (props: BudgetInspectorProps) => {
     <div class="text-sm">
       <div class="mx-2 flex justify-between">
         <span class="font-bold">Available Balance</span>
-        <span>{envelopeBalance()}</span>
+        <span>{netBalance()[props.activeEnvelope()][store.currentMonth]}</span>
       </div>
     </div>
   )
