@@ -12,7 +12,7 @@ interface BudgetRowProps {
 
 export const BudgetRow = (props: BudgetRowProps) => {
   let inputRef: HTMLInputElement
-  const [state, { envelopeBalances, setAllocated }] =
+  const [state, { envelopeBalances, allocate }] =
     useContext(CentralStoreContext)
   const [editing, setEditing] = createSignal(false)
 
@@ -60,7 +60,7 @@ export const BudgetRow = (props: BudgetRowProps) => {
                   state.envelopes[props.name].allocated[state.currentMonth]
                 }
                 onChange={(e) =>
-                  setAllocated(
+                  allocate(
                     props.name,
                     state.currentMonth,
                     parseFloat(e.target.value)

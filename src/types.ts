@@ -32,8 +32,8 @@ export interface Account {
 }
 
 export interface Envelope {
-  allocated: Record<MonthYear, number>
-  monthlyGoal: Record<MonthYear, number>
+  allocated: number[]
+  monthlyGoal: number[]
 }
 
 export type Panel = "transactions" | "budget"
@@ -41,7 +41,7 @@ export type Panel = "transactions" | "budget"
 export interface Store {
   transactions: Transaction[]
   unallocated: number
-  currentMonth: MonthYear
+  currentMonth: number
   envelopes: Record<string, Envelope>
   accounts: string[]
   panel: Panel

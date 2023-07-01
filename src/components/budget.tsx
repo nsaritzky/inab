@@ -14,10 +14,8 @@ export const Budget: Component<BudgetProps> = (props) => {
   const [state, { envelopeBalances }] = useContext(CentralStoreContext)
   const [activeEnvelope, setActiveEnvelope] = createSignal<string>()
 
-  const getAllocated = (my: MonthYear, envlp: string) =>
-    Object.keys(state.envelopes[envlp].allocated).includes(my)
-      ? state.envelopes[envlp].allocated[my]
-      : 0
+  const getAllocated = (monthIndex: number, envlp: string) =>
+    state.envelopes[envlp].allocated[monthIndex]
 
   return (
     <div class="ml-64">

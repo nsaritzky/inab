@@ -4,6 +4,9 @@ import { v4 as uuid } from "uuid"
 import { createEffect, createMemo } from "solid-js"
 import { dateToMonthYear } from "./utilities"
 
+export const DAY_ONE = new Date("2023-01-01T00:00:01")
+const ZEROS: number[] = Array(50).fill(0)
+
 const sampleTxns: Transaction[] = [
   {
     id: "0",
@@ -27,11 +30,17 @@ const sampleTxns: Transaction[] = [
 export const initialState: Store = {
   transactions: [],
   accounts: [],
-  currentMonth: "JUN 2023",
+  currentMonth: 5,
   unallocated: 0,
   envelopes: {
-    Rent: { allocated: { "JUN 2023": 1000 }, monthlyGoal: {} },
-    Groceries: { allocated: { "JUN 2023": 300 }, monthlyGoal: {} },
+    Rent: {
+      allocated: [0, 0, 0, 0, 0, 1000].concat(ZEROS),
+      monthlyGoal: ZEROS,
+    },
+    Groceries: {
+      allocated: [0, 0, 0, 0, 0, 300].concat(ZEROS),
+      monthlyGoal: ZEROS,
+    },
   },
   panel: "transactions",
 }
@@ -60,16 +69,16 @@ export const createCentralStore = () => {
       { id: idFn(), amount, date, payee, envelope, account, description },
     ])
     if (!Object.keys(state.envelopes).includes(envelope)) {
-      setState("envelopes", envelope, { allocated: {} })
+      setState("envelopes", envelope, { allocated: ZEROS, monthlyGoal: ZEROS })
     }
   }
 
   const deleteTransaction = (id: string) =>
     setState("transactions", (txns) => txns.filter((t) => t.id != id))
 
-  const setAllocated = (envelope: string, my: MonthYear, value: number) => {
-    const oldValue: number = state.envelopes[envelope].allocated[my] || 0
-    setState("envelopes", envelope, "allocated", my, value)
+  const allocate = (envelope: string, month: number, value: number) => {
+    const oldValue: number = state.envelopes[envelope].allocated[month] || 0
+    setState("envelopes", envelope, "allocated", month, value)
     setState("unallocated", (old) => old - value + oldValue)
   }
 
@@ -79,8 +88,7 @@ export const createCentralStore = () => {
       const activity = state.transactions
         .filter(
           (txn) =>
-            txn.envelope == nm &&
-            dateToMonthYear(txn.date) == state.currentMonth
+            txn.envelope == nm && dateToIndex(txn.date) == state.currentMonth
         )
         .reduce((sum, txn) => sum + txn.amount, 0)
       Object.assign(result, { [nm]: activity })
@@ -99,97 +107,21 @@ export const createCentralStore = () => {
     return result
   })
 
-  const nextMonth = (month: Month): Month => {
-    switch (month) {
-      case "JAN":
-        return "FEB"
-      case "FEB":
-        return "MAR"
-      case "MAR":
-        return "APR"
-      case "APR":
-        return "MAY"
-      case "MAY":
-        return "JUN"
-      case "JUN":
-        return "JUL"
-      case "JUL":
-        return "AUG"
-      case "AUG":
-        return "SEP"
-      case "SEP":
-        return "OCT"
-      case "OCT":
-        return "NOV"
-      case "NOV":
-        return "DEC"
-      case "DEC":
-        return "JAN"
-    }
-  }
+  const dateToIndex = (d: Date) =>
+    12 * d.getFullYear() +
+    d.getMonth() -
+    12 * DAY_ONE.getFullYear() -
+    DAY_ONE.getMonth()
 
-  const prevMonth = (month: Month): Month => {
-    switch (month) {
-      case "JAN":
-        return "DEC"
-      case "FEB":
-        return "JAN"
-      case "MAR":
-        return "FEB"
-      case "APR":
-        return "MAR"
-      case "MAY":
-        return "APR"
-      case "JUN":
-        return "MAY"
-      case "JUL":
-        return "JUN"
-      case "AUG":
-        return "JUL"
-      case "SEP":
-        return "AUG"
-      case "OCT":
-        return "SEP"
-      case "NOV":
-        return "OCT"
-      case "DEC":
-        return "NOV"
-    }
-  }
-
-  const incMonth = (my: MonthYear): MonthYear => {
-    const month = my.slice(0, 3) as Month
-    const year = parseInt(my.slice(-4))
-    let newYear
-    if (month == "DEC") {
-      newYear = year + 1
-    } else {
-      newYear = year
-    }
-    return `${nextMonth(month)} ${newYear}`
-  }
-
-  const decMonth = (my: MonthYear): MonthYear => {
-    const month = my.slice(0, 3) as Month
-    const year = parseInt(my.slice(-4))
-    let newYear
-    if (month == "JAN") {
-      newYear = year - 1
-    } else {
-      newYear = year
-    }
-    return `${prevMonth(month)} ${newYear}`
-  }
-
-  const setIncMonth = () => setState("currentMonth", incMonth)
-  const setDecMonth = () => setState("currentMonth", decMonth)
+  const setIncMonth = () => setState("currentMonth", (n) => n + 1)
+  const setDecMonth = () => setState("currentMonth", (n) => n - 1)
 
   const setPanel = (panel: Panel) => setState("panel", panel)
 
   return [
     state,
     {
-      setAllocated,
+      allocate,
       addTransaction,
       deleteTransaction,
       envelopeBalances,
@@ -197,6 +129,7 @@ export const createCentralStore = () => {
       setIncMonth,
       setDecMonth,
       setPanel,
+      dateToIndex,
     },
   ] as const
 }

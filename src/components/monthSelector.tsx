@@ -7,6 +7,21 @@ interface MonthSelectorProps {
   currentMonth: MonthYear
 }
 
+const MONTHS = [
+  "JAN",
+  "FEB",
+  "MAR",
+  "APR",
+  "MAY",
+  "JUN",
+  "JUL",
+  "AUG",
+  "SEP",
+  "OCT",
+  "NOV",
+  "DEC",
+]
+
 const MonthSelector: Component = () => {
   const [state, { setDecMonth, setIncMonth }] = useContext(CentralStoreContext)
 
@@ -20,7 +35,9 @@ const MonthSelector: Component = () => {
       >
         <FiChevronLeft size={24} />
       </button>
-      <div class="w-20">{state.currentMonth}</div>
+      <div class="w-20">{`${MONTHS[state.currentMonth % 12]} ${
+        2023 + Math.floor(state.currentMonth / 12)
+      }`}</div>
       <button
         onClick={(e) => {
           e.preventDefault()

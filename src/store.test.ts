@@ -73,6 +73,7 @@ test("addTransaction", async () => {
 describe("balances", () => {
   test("envelopeBalances", async () => {
     expect(fns.envelopeBalances()["Groceries"]).toBe(-1)
+    expect(fns.envelopeBalances()["Rent"]).toBe(-2)
     expect(fns.envelopeBalances()["New"]).toBe(-10)
   })
 
@@ -96,7 +97,7 @@ test("increment and decrement month", async () => {
 })
 
 test("deleteTransaction", async () => {
-  fns.deleteTransaction("0")
+  fns.deleteTransaction("1")
   expect(state.transactions.length).toBe(3)
   expect(fns.envelopeBalances()["Rent"]).toBe(0)
 })

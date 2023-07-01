@@ -1,6 +1,7 @@
 import { Accessor, onCleanup } from "solid-js"
 import { MonthYear } from "./types"
 import type { JSX, Signal } from "solid-js"
+import { DAY_ONE } from "./store"
 
 export const dateToMonthYear = (date: Date): MonthYear =>
   `${date
@@ -16,6 +17,12 @@ export function clickOutside(
 
   onCleanup(() => document.body.removeEventListener("click", onClick))
 }
+
+export const dateToIndex = (d: Date) =>
+  12 * d.getFullYear() +
+  d.getMonth() -
+  12 * DAY_ONE.getFullYear() -
+  DAY_ONE.getMonth()
 
 declare module "solid-js" {
   namespace JSX {
