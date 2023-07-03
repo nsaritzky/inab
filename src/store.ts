@@ -2,7 +2,7 @@ import { createStore } from "solid-js/store"
 import type { Store, Transaction, Month, MonthYear, Panel } from "./types"
 import { v4 as uuid } from "uuid"
 import { createEffect, createMemo } from "solid-js"
-import { dateToMonthYear } from "./utilities"
+import { dateToIndex } from "./utilities"
 
 export const DAY_ONE = new Date("2023-01-01T00:00:01")
 const ZEROS: number[] = Array(50).fill(0)
@@ -73,6 +73,56 @@ export const createCentralStore = () => {
     }
   }
 
+  const editTransaction = (
+    id: string | (() => string),
+    {
+      inflow,
+      outflow,
+      date,
+      payee,
+      envelope,
+      account,
+      description,
+    }: Omit<Transaction, "id" | "amount"> & { inflow: number; outflow: number }
+  ) => {
+    const newAmount = inflow - outflow
+    if (typeof id == "string") {
+      const txn = state.transactions.filter((t) => t.id == id)[0]
+      const oldAmount = txn.amount
+      if (newAmount > oldAmount) {
+        setState("unallocated", (old) => old - oldAmount + newAmount)
+      }
+      setState(
+        "transactions",
+        (t) => t.id == id,
+        () => ({
+          amount: newAmount,
+          date,
+          payee,
+          envelope,
+          account,
+          description,
+        })
+      )
+    } else {
+      if (newAmount > 0) {
+        setState("unallocated", (old) => old + newAmount)
+      }
+      setState("transactions", (txns) => [
+        ...txns,
+        {
+          id: id(),
+          amount: newAmount,
+          date,
+          payee,
+          envelope,
+          account,
+          description,
+        },
+      ])
+    }
+  }
+
   const deleteTransaction = (id: string) =>
     setState("transactions", (txns) => txns.filter((t) => t.id != id))
 
@@ -133,12 +183,6 @@ export const createCentralStore = () => {
     return result
   })
 
-  const dateToIndex = (d: Date) =>
-    12 * d.getFullYear() +
-    d.getMonth() -
-    12 * DAY_ONE.getFullYear() -
-    DAY_ONE.getMonth()
-
   const setIncMonth = () => setState("currentMonth", (n) => n + 1)
   const setDecMonth = () => setState("currentMonth", (n) => n - 1)
 
@@ -149,6 +193,7 @@ export const createCentralStore = () => {
     {
       allocate,
       addTransaction,
+      editTransaction,
       deleteTransaction,
       envelopeBalances,
       monthlyBalances,

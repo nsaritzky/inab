@@ -1,16 +1,31 @@
-import { useContext } from "solid-js"
+import { Setter, Show, useContext } from "solid-js"
 import type { Transaction } from "../types"
 import { BiRegularPencil, BiRegularTrash } from "solid-icons/bi"
 import { CentralStoreContext } from "../App"
+import { TransactionForm } from "./transactionForm"
 
 interface TransactionRowProps {
   txn: Transaction
+  active: boolean
+  activate: () => number
+  deactivate: () => void
 }
 
-export const TransactionRow = (props: TransactionRowProps) => {
+interface TransactionDisplayProps {
+  txn: Transaction
+  activate: () => number
+}
+
+interface TransactionEditProps {}
+
+const TransactionDisplay = (props: TransactionDisplayProps) => {
   const [_, { deleteTransaction }] = useContext(CentralStoreContext)
   return (
-    <div class="mb-1 table-row pt-1 text-xs">
+    <div
+      class="mb-1 table-row pt-1 text-xs"
+      onClick={props.activate}
+      role="row"
+    >
       <div class="table-cell ">
         {props.txn.amount > 0 &&
           props.txn.amount.toLocaleString("en-us", {
@@ -43,5 +58,13 @@ export const TransactionRow = (props: TransactionRowProps) => {
         </button>
       </div>
     </div>
+  )
+}
+
+export const TransactionRow = (props: TransactionRowProps) => {
+  return (
+    <Show when={props.active} fallback={<TransactionDisplay {...props} />}>
+      <TransactionForm txn={props.txn} deactivate={props.deactivate} />
+    </Show>
   )
 }

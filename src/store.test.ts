@@ -97,6 +97,21 @@ describe("balances", () => {
   })
 })
 
+test("editTransaction", () => {
+  fns.editTransaction("2", {
+    description: "editing test",
+    outflow: 5,
+    inflow: 0,
+    payee: "Mr. F",
+    envelope: "New",
+    account: "Checking",
+    date: new Date(Date.parse("2023-06-23")),
+  })
+  expect(state.transactions["2"].amount).toBe(-5)
+  expect(state.transactions["2"].description).toBe("editing test")
+  expect(state.transactions["2"].payee).toBe("Mr. F")
+})
+
 test("deleteTransaction", async () => {
   fns.deleteTransaction("1")
   expect(state.transactions.length).toBe(4)

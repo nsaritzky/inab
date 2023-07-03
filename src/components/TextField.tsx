@@ -3,6 +3,7 @@ import { type JSX, Show, splitProps } from "solid-js"
 
 type TextFieldProps = {
   name: string
+  ariaLabel?: string
   type?: "text" | "email" | "tel" | "password" | "url" | "date" | undefined
   label?: string | undefined
   class?: string
@@ -23,7 +24,7 @@ export function TextField(props: TextFieldProps) {
   const [rootProps, inputProps] = splitProps(
     props,
     ["name", "class", "value", "required", "disabled"],
-    ["placeholder", "ref", "onInput", "onChange", "onBlur"]
+    ["aria-label", "placeholder", "ref", "onInput", "onChange", "onBlur"]
   )
   return (
     <Kobalte.Root

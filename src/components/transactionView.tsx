@@ -1,7 +1,6 @@
-import { For, Show, createSignal, useContext } from "solid-js"
-import { AddTransactionForm } from "./newTransaction"
+import { For, Show, createEffect, createSignal, useContext } from "solid-js"
+import { TransactionForm } from "./transactionForm"
 import { TransactionRow } from "./transactionRow"
-import { dateToMonthYear } from "../utilities"
 import { AiOutlinePlusCircle } from "solid-icons/ai"
 import { CentralStoreContext } from "../App"
 import { sort } from "@solid-primitives/signal-builders"
@@ -9,6 +8,7 @@ import { sort } from "@solid-primitives/signal-builders"
 export const TransactionView = () => {
   const [state, _] = useContext(CentralStoreContext)
   const [editingNewTransaction, setEditingNewTransaction] = createSignal(false)
+  const [activeIndex, setActiveIndex] = createSignal<number>()
 
   return (
     <div class="ml-64 w-auto">
@@ -23,8 +23,12 @@ export const TransactionView = () => {
             <AiOutlinePlusCircle size={24} /> Add transaction
           </div>
         </button>
-        <div class="table w-auto table-fixed divide-y">
-          <div class="flex table-header-group text-left">
+        <div
+          class="table w-auto table-fixed divide-y"
+          role="table"
+          aria-label="Transactions"
+        >
+          <div class="flex table-header-group text-left" role="row">
             <div class="table-cell w-14">Inflow</div>
             <div class="table-cell w-14">Outflow</div>
             <div class="table-cell w-24">Date</div>
@@ -33,19 +37,27 @@ export const TransactionView = () => {
             <div class="table-cell w-20">Account</div>
             <div class="table-cell w-20">Description</div>
           </div>
+          <Show when={editingNewTransaction()}>
+            <TransactionForm
+              setEditingNewTransaction={setEditingNewTransaction}
+              deactivate={() => setEditingNewTransaction(false)}
+            />
+          </Show>
           <For
             each={sort(
               state.transactions,
-              (a, b) => b.date.getDate() - a.date.getDate()
+              (a, b) => a.date.getDate() - b.date.getDate()
             )()}
           >
-            {(txn) => <TransactionRow txn={txn} />}
+            {(txn, i) => (
+              <TransactionRow
+                txn={txn}
+                active={activeIndex() == i()}
+                activate={() => setActiveIndex(i())}
+                deactivate={() => setActiveIndex(-1)}
+              />
+            )}
           </For>
-          <Show when={editingNewTransaction()}>
-            <AddTransactionForm
-              setEditingNewTransaction={setEditingNewTransaction}
-            />
-          </Show>
         </div>
       </div>
     </div>

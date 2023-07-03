@@ -15,9 +15,12 @@ import { TextField } from "./TextField"
 import { SelectField } from "./SelectField"
 import { ToggleButton, Switch } from "@kobalte/core"
 import { clickOutside } from "../utilities"
+import { Transaction } from "../types"
 
 interface AddTransactionFormProps {
-  setEditingNewTransaction: Setter<boolean>
+  setEditingNewTransaction?: Setter<boolean>
+  deactivate: () => void
+  txn?: Transaction | undefined
 }
 
 interface AddTransactionElement extends HTMLCollection {
@@ -31,6 +34,7 @@ interface AddTransactionElement extends HTMLCollection {
 }
 
 type TransactionForm = {
+  id?: string | undefined
   inflow: string
   outflow: string
   date: string
@@ -40,32 +44,44 @@ type TransactionForm = {
   description?: string | undefined
 }
 
-export const AddTransactionForm: Component<AddTransactionFormProps> = (
+export const TransactionForm: Component<AddTransactionFormProps> = (
   props
 ) => {
-  const [state, { addTransaction }] = useContext(CentralStoreContext)
+  const [state, { addTransaction, editTransaction }] = useContext(CentralStoreContext)
   const [inflow, setInflow] = createSignal<string>()
   const [outflow, setOutflow] = createSignal<string>()
-  const [newTransactionForm, { Form, Field }] = createForm<TransactionForm>({
-    initialValues: { date: new Date().toISOString().split("T")[0] },
-  })
+
+  const initialValues: Partial<TransactionForm> = props.txn ? {
+    id: props.txn.id,
+    inflow: props.txn.amount > 0 ? props.txn.amount.toString() : "",
+    outflow: props.txn.amount < 0 ? props.txn.amount.toString().slice(1) : "",
+    date: props.txn.date.toISOString().split("T")[0],
+    payee: props.txn.payee,
+    envelope: props.txn.envelope,
+    account: props.txn.account,
+    description: props.txn.description
+  } : { date: new Date().toISOString().split("T")[0] }
+
+    const [newTransactionForm, { Form, Field }] = createForm<TransactionForm>({
+      initialValues
+    })
 
   const onSubmit: SubmitHandler<TransactionForm> = (values, _) => {
     if (values.inflow != "" && values.outflow != "") {
         setError(newTransactionForm, "inflow", "Only one of inflow or outflow should be filled in")
         return
     }
-    props.setEditingNewTransaction(false)
-    reset(newTransactionForm)
-    addTransaction(uuid, {
+    props.deactivate()
+    editTransaction(props.txn?.id || uuid, {
       inflow: parseFloat(values.inflow) || 0,
       outflow: parseFloat(values.outflow) || 0,
-      date: new Date(values.date),
+      date: new Date(`${values.date} 00:00:01`),
       payee: values.payee || "",
       envelope: inflow() ? "" : values.envelope,
       account: values.account,
       description: values.description || "",
     })
+    reset(newTransactionForm)
   }
 
   return (
@@ -76,9 +92,12 @@ export const AddTransactionForm: Component<AddTransactionFormProps> = (
             class="mt-1 table-row text-xs"
             use: clickOutside={() => {
                 console.log("clickOutside")
-                props.setEditingNewTransaction(false)
+                props.setEditingNewTransaction && props.setEditingNewTransaction(false)
             }}
         >
+          <Field name="id" >
+            {(field, props) => <input type="hidden" value={field.value} />}
+          </Field>
             <Field
                 name="inflow"
                 validate={[
@@ -90,6 +109,7 @@ export const AddTransactionForm: Component<AddTransactionFormProps> = (
                         {...props}
                         placeholder="$0.00"
                         class="table-cell p-1 outline-none"
+                      aria-label="outflow"
                       inputClass=" rounded p-1 border border-1 outline-none"
                         type="text"
                         onInput={(e) => { setValue(newTransactionForm, "outflow", "")
