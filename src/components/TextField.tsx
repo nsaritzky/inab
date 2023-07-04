@@ -39,7 +39,7 @@ export function TextField(props: TextFieldProps) {
         fallback={
           <Kobalte.Input
             {...inputProps}
-            class={props.inputClass + " w-full"}
+            class={props.inputClass}
             type={props.type}
           />
         }

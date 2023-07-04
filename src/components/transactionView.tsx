@@ -31,7 +31,7 @@ export const TransactionView = () => {
           <div class="flex table-header-group text-left" role="row">
             <div class="table-cell w-14">Inflow</div>
             <div class="table-cell w-14">Outflow</div>
-            <div class="table-cell w-24">Date</div>
+            <div class="table-cell w-28">Date</div>
             <div class="table-cell w-20">Payee</div>
             <div class="table-cell w-36">Envelope</div>
             <div class="table-cell w-20">Account</div>

@@ -30,6 +30,7 @@ export function SelectField(props: SelectFieldProps) {
         {...createOptions(props.choices, { createable: true })}
         onChange={props.onChange}
         disabled={props.disabled}
+        initialValue={rootProps.value}
       />
     </div>
   )

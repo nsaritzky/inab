@@ -1,8 +1,9 @@
-import { Setter, Show, useContext } from "solid-js"
+import { Setter, Show, createEffect, useContext } from "solid-js"
 import type { Transaction } from "../types"
 import { BiRegularPencil, BiRegularTrash } from "solid-icons/bi"
 import { CentralStoreContext } from "../App"
 import { TransactionForm } from "./transactionForm"
+import { useKeyDownEvent } from "@solid-primitives/keyboard"
 
 interface TransactionRowProps {
   txn: Transaction
@@ -14,6 +15,7 @@ interface TransactionRowProps {
 interface TransactionDisplayProps {
   txn: Transaction
   activate: () => number
+  deactivate: () => void
 }
 
 interface TransactionEditProps {}
@@ -25,6 +27,8 @@ const TransactionDisplay = (props: TransactionDisplayProps) => {
     <div
       class="mb-1 table-row pt-1 text-xs"
       onClick={props.activate}
+      onKeyDown={(e) => console.log(e.key)}
+      tabIndex="0"
       role="row"
     >
       <div class="table-cell ">
@@ -53,6 +57,7 @@ const TransactionDisplay = (props: TransactionDisplayProps) => {
           onClick={(e) => {
             e.preventDefault()
             deleteTransaction(props.txn.id)
+            props.deactivate()
           }}
         >
           <BiRegularTrash size={14} />
@@ -63,6 +68,17 @@ const TransactionDisplay = (props: TransactionDisplayProps) => {
 }
 
 export const TransactionRow = (props: TransactionRowProps) => {
+  const keyDownEvent = useKeyDownEvent()
+
+  createEffect(() => {
+    const e = keyDownEvent()
+    if (e && props.active) {
+      if (e.key === "Escape") {
+        props.deactivate()
+      }
+    }
+  })
+
   return (
     <Show when={props.active} fallback={<TransactionDisplay {...props} />}>
       <TransactionForm txn={props.txn} deactivate={props.deactivate} />
