@@ -2,7 +2,8 @@ import { createStore } from "solid-js/store"
 import type { Store, Transaction, Month, MonthYear, Panel } from "./types"
 import { v4 as uuid } from "uuid"
 import { createEffect, createMemo } from "solid-js"
-import { dateToIndex } from "./utilities"
+import { dateParser, dateToIndex } from "./utilities"
+import { makePersisted } from "@solid-primitives/storage"
 
 export const DAY_ONE = new Date("2023-01-01T00:00:01")
 const ZEROS: number[] = Array(50).fill(0)
@@ -46,7 +47,9 @@ export const initialState: Store = {
 }
 
 export const createCentralStore = () => {
-  const [state, setState] = createStore(initialState)
+  const [state, setState] = makePersisted<Store>(createStore(initialState), {
+    deserialize: (data) => JSON.parse(data, dateParser),
+  })
 
   const addTransaction = (
     idFn: () => string,

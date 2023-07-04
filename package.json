@@ -37,7 +37,7 @@
     "@kobalte/tailwindcss": "^0.6.5",
     "@modular-forms/solid": "^0.18.1",
     "@solid-primitives/signal-builders": "^0.1.13",
-    "@solid-primitives/storage": "^1.3.11",
+    "@solid-primitives/storage": "^2.0.0",
     "@thisbeyond/solid-select": "^0.14.0",
     "@types/uuid": "^9.0.2",
     "lucide-solid": "^0.252.0",
