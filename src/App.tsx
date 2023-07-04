@@ -1,15 +1,12 @@
-import type { Store, Transaction } from "./types"
-import { createStore } from "solid-js/store"
 import { Budget } from "./components/budget"
-import { createCentralStore } from "./store"
+import { createCentralStore, initialState } from "./store"
 import { TransactionView } from "./components/transactionView"
-import CentralStoreProvider from "./components/storeProvider"
 import { Sidebar } from "./components/sidebar"
-import { v4 as uuid } from "uuid"
 import { Switch, Match, createContext } from "solid-js"
 import "solid-devtools"
 
-export const CentralStoreContext = createContext(createCentralStore())
+export const CentralStoreContext =
+  createContext<ReturnType<typeof createCentralStore>>()
 
 function App() {
   const [state, fns] = createCentralStore()
@@ -22,7 +19,7 @@ function App() {
             <TransactionView />
           </Match>
           <Match when={state.panel == "budget"}>
-            <Budget month={state.currentMonth} />
+            <Budget />
           </Match>
         </Switch>
       </CentralStoreContext.Provider>

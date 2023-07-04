@@ -6,7 +6,7 @@ import { CentralStoreContext } from "../App"
 import { sort } from "@solid-primitives/signal-builders"
 
 export const TransactionView = () => {
-  const [state, _] = useContext(CentralStoreContext)
+  const [state, _] = useContext(CentralStoreContext)!
   const [editingNewTransaction, setEditingNewTransaction] = createSignal(false)
   const [activeIndex, setActiveIndex] = createSignal<number>()
 

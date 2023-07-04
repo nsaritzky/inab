@@ -36,6 +36,7 @@
     "@kobalte/core": "^0.9.7",
     "@kobalte/tailwindcss": "^0.6.5",
     "@modular-forms/solid": "^0.18.1",
+    "@solid-primitives/keyboard": "^1.2.3",
     "@solid-primitives/signal-builders": "^0.1.13",
     "@solid-primitives/storage": "^2.0.0",
     "@thisbeyond/solid-select": "^0.14.0",

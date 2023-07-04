@@ -19,7 +19,8 @@ interface TransactionDisplayProps {
 interface TransactionEditProps {}
 
 const TransactionDisplay = (props: TransactionDisplayProps) => {
-  const [_, { deleteTransaction }] = useContext(CentralStoreContext)
+  const [_, { deleteTransaction }] = useContext(CentralStoreContext)!
+
   return (
     <div
       class="mb-1 table-row pt-1 text-xs"

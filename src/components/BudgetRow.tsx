@@ -13,7 +13,7 @@ interface BudgetRowProps {
 export const BudgetRow = (props: BudgetRowProps) => {
   let inputRef: HTMLInputElement
   const [state, { envelopeBalances, netBalance, allocate }] =
-    useContext(CentralStoreContext)
+    useContext(CentralStoreContext)!
   const [editing, setEditing] = createSignal(false)
 
   return (

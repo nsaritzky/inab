@@ -9,8 +9,7 @@ import { BudgetInspector } from "./BudgetInspector"
 interface BudgetProps {}
 
 export const Budget: Component<BudgetProps> = (props) => {
-  const [state, { envelopeBalances, netBalance }] =
-    useContext(CentralStoreContext)
+  const [state, _] = useContext(CentralStoreContext)!
   const [activeEnvelope, setActiveEnvelope] = createSignal<string>()
 
   const getAllocated = (monthIndex: number, envlp: string) =>

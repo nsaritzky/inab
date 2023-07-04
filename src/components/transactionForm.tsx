@@ -44,10 +44,9 @@ type TransactionForm = {
   description?: string | undefined
 }
 
-export const TransactionForm: Component<AddTransactionFormProps> = (
-  props
-) => {
-  const [state, { addTransaction, editTransaction }] = useContext(CentralStoreContext)
+export const TransactionForm: Component<AddTransactionFormProps> = (props) => {
+  const [state, { addTransaction, editTransaction }] =
+    useContext(CentralStoreContext)!
   const [inflow, setInflow] = createSignal<string>()
   const [outflow, setOutflow] = createSignal<string>()
 
