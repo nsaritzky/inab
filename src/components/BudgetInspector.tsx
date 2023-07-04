@@ -1,27 +1,54 @@
 import { type Accessor, useContext } from "solid-js"
 import { CentralStoreContext } from "../App"
+import { dateToIndex, displayUSD } from "../utilities"
 
 interface BudgetInspectorProps {
   activeEnvelope: Accessor<string | undefined>
 }
 
 export const BudgetInspector = (props: BudgetInspectorProps) => {
-  const [store, { netBalance }] = useContext(CentralStoreContext)
-  const envelopeBalance = () => {
-    const envlp = props.activeEnvelope()
-    return envlp
-      ? store.envelopes[envlp].allocated[store.currentMonth].toLocaleString(
-          "en-us",
-          { style: "currency", currency: "USD" }
-        )
-      : 0
-  }
+  const [state, { netBalance }] = useContext(CentralStoreContext)!
 
   return (
-    <div class="text-sm">
-      <div class="mx-2 flex justify-between">
-        <span class="font-bold">Available Balance</span>
-        <span>{netBalance()[props.activeEnvelope()][store.currentMonth]}</span>
+    <div class="text-md">
+      <div class="mx-2">
+        <div class="flex justify-between">
+          <span class="font-bold">Available Balance</span>
+          <span>
+            {displayUSD(
+              netBalance()[props.activeEnvelope()!][state.currentMonth]
+            )}
+          </span>
+        </div>
+        <div class="flex justify-between">
+          <span>Leftover from last month</span>
+          <span>
+            {displayUSD(
+              netBalance()[props.activeEnvelope()!][state.currentMonth - 1]
+            )}
+          </span>
+        </div>
+        <div class="flex justify-between">
+          <span>Assigned this month</span>
+          <span>
+            {displayUSD(
+              state.envelopes[props.activeEnvelope()!].allocated[
+                state.currentMonth
+              ]
+            )}
+          </span>
+        </div>
+        <div class="flex justify-between">
+          <span>Activity</span>
+          <span>
+            {displayUSD(
+              state.transactions
+                .filter((txn) => dateToIndex(txn.date) == state.currentMonth)
+                .filter((txn) => txn.envelope === props.activeEnvelope())
+                .reduce((sum, txn) => sum + txn.amount, 0)
+            )}
+          </span>
+        </div>
       </div>
     </div>
   )
