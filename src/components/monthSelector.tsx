@@ -6,6 +6,7 @@ import { Popover, Separator } from "@kobalte/core"
 import { useKeyDownEvent } from "@solid-primitives/keyboard"
 import { DAY_ONE } from "../store"
 import { For } from "solid-js"
+import { VsClose, VsTriangleDown } from "solid-icons/vs"
 
 interface MonthSelectorProps {
   currentMonth: MonthYear
@@ -55,7 +56,9 @@ const MonthPopover = (props: PopupProps) => {
             <FiChevronRight size={24} />
           </button>
         </div>
-        <Popover.CloseButton>x</Popover.CloseButton>
+        <Popover.CloseButton>
+          <VsClose />
+        </Popover.CloseButton>
       </div>
       <Separator.Root orientation="horizontal" class="h-1 w-full" />
       <div class="grid grid-cols-4">
@@ -97,7 +100,10 @@ const MonthSelector: Component = () => {
       </button>
       <Popover.Root>
         <Popover.Trigger>
-          <div class="w-20">{`${currentMonth()} ${currentYear()}`}</div>
+          <div class="flex items-center">
+            <div class="w-20">{`${currentMonth()} ${currentYear()}`}</div>
+            <VsTriangleDown />
+          </div>
         </Popover.Trigger>
         <Popover.Portal>
           <Popover.Content class="rounded bg-gray-50 shadow-xl">
