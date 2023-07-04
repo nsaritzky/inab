@@ -1,7 +1,11 @@
 import { FiChevronLeft, FiChevronRight } from "solid-icons/fi"
 import { MonthYear } from "../types"
-import { Component, useContext } from "solid-js"
+import { Component, Setter, createSignal, useContext } from "solid-js"
 import { CentralStoreContext } from "../App"
+import { Popover, Separator } from "@kobalte/core"
+import { useKeyDownEvent } from "@solid-primitives/keyboard"
+import { DAY_ONE } from "../store"
+import { For } from "solid-js"
 
 interface MonthSelectorProps {
   currentMonth: MonthYear
@@ -20,10 +24,66 @@ const MONTHS = [
   "OCT",
   "NOV",
   "DEC",
-]
+] as const
+
+type Month = (typeof MONTHS)[number]
+
+interface PopupProps {
+  currentMonth: Month
+  currentYear: number
+  setMonth: (i: number) => void
+}
+
+const MonthPopover = (props: PopupProps) => {
+  const [year, setYear] = createSignal(props.currentYear)
+  const toMonthIndex = (month: Month, year: number) =>
+    MONTHS.indexOf(month) +
+    12 * year -
+    DAY_ONE.getMonth() -
+    12 * DAY_ONE.getFullYear()
+  return (
+    <div>
+      <div class="flex justify-between">
+        <div class="mx-2 flex w-full justify-center">
+          <button onClick={() => setYear((y) => y - 1)}>
+            <FiChevronLeft size={24} />
+          </button>
+          <div>
+            <button>{year()}</button>
+          </div>
+          <button onClick={() => setYear((y) => y + 1)}>
+            <FiChevronRight size={24} />
+          </button>
+        </div>
+        <Popover.CloseButton>x</Popover.CloseButton>
+      </div>
+      <Separator.Root orientation="horizontal" class="h-1 w-full" />
+      <div class="grid grid-cols-4">
+        <For each={MONTHS}>
+          {(month) => (
+            <button
+              onClick={() => props.setMonth(toMonthIndex(month, year()))}
+              class={`${
+                month == props.currentMonth && year() == props.currentYear
+                  ? "bg-slate-300 text-blue-500"
+                  : "hover:bg-slate-200"
+              } m-2 rounded p-1`}
+            >
+              {month}
+            </button>
+          )}
+        </For>
+      </div>
+    </div>
+  )
+}
 
 const MonthSelector: Component = () => {
-  const [state, { setDecMonth, setIncMonth }] = useContext(CentralStoreContext)
+  const [state, { setDecMonth, setIncMonth, setMonth }] =
+    useContext(CentralStoreContext)!
+  const currentMonth = () => MONTHS[state.currentMonth % 12]
+  const currentYear = () =>
+    DAY_ONE.getFullYear() + Math.floor(state.currentMonth / 12)
 
   return (
     <div class="align-center flex h-8">
@@ -35,9 +95,23 @@ const MonthSelector: Component = () => {
       >
         <FiChevronLeft size={24} />
       </button>
-      <div class="w-20">{`${MONTHS[state.currentMonth % 12]} ${
-        2023 + Math.floor(state.currentMonth / 12)
-      }`}</div>
+      <Popover.Root>
+        <Popover.Trigger>
+          <div class="w-20">{`${currentMonth()} ${currentYear()}`}</div>
+        </Popover.Trigger>
+        <Popover.Portal>
+          <Popover.Content class="rounded bg-gray-50 shadow-xl">
+            <Popover.Arrow />
+            <div class="flex">
+              <MonthPopover
+                currentMonth={currentMonth()}
+                currentYear={currentYear()}
+                setMonth={setMonth}
+              />
+            </div>
+          </Popover.Content>
+        </Popover.Portal>
+      </Popover.Root>
       <button
         onClick={(e) => {
           e.preventDefault()

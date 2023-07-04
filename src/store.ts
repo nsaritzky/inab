@@ -50,6 +50,9 @@ export const createCentralStore = () => {
   const [state, setState] = makePersisted<Store>(createStore(initialState), {
     deserialize: (data) => JSON.parse(data, dateParser),
   })
+  if (state.currentMonth > ZEROS.length) {
+    setState("currentMonth", 0)
+  }
 
   const addTransaction = (
     idFn: () => string,
@@ -188,6 +191,7 @@ export const createCentralStore = () => {
 
   const setIncMonth = () => setState("currentMonth", (n) => n + 1)
   const setDecMonth = () => setState("currentMonth", (n) => n - 1)
+  const setMonth = (i: number) => setState("currentMonth", i)
 
   const setPanel = (panel: Panel) => setState("panel", panel)
 
@@ -204,6 +208,7 @@ export const createCentralStore = () => {
       accountBalances,
       setIncMonth,
       setDecMonth,
+      setMonth,
       setPanel,
       dateToIndex,
     },

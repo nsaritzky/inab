@@ -1,10 +1,18 @@
-import { Component, For, Show, createSignal, useContext } from "solid-js"
+import {
+  Component,
+  For,
+  Show,
+  createEffect,
+  createSignal,
+  useContext,
+} from "solid-js"
 import type { Month, MonthYear } from "../types"
 import MonthSelector from "./monthSelector"
 import Unallocated from "./unallocated"
 import { CentralStoreContext } from "../App"
 import { BudgetRow } from "./BudgetRow"
 import { BudgetInspector } from "./BudgetInspector"
+import { useKeyDownEvent } from "@solid-primitives/keyboard"
 
 interface BudgetProps {}
 
@@ -14,6 +22,17 @@ export const Budget: Component<BudgetProps> = (props) => {
 
   const getAllocated = (monthIndex: number, envlp: string) =>
     state.envelopes[envlp].allocated[monthIndex]
+
+  const keyDownEvent = useKeyDownEvent()
+
+  createEffect(() => {
+    const e = keyDownEvent()
+    if (e && activeEnvelope()) {
+      if (e.key === "Escape") {
+        setActiveEnvelope()
+      }
+    }
+  })
 
   return (
     <div class="ml-64">
@@ -41,6 +60,9 @@ export const Budget: Component<BudgetProps> = (props) => {
                       name={name}
                       envlp={envlp}
                       allocated={getAllocated(state.currentMonth, name)}
+                      active={activeEnvelope() == name}
+                      activate={() => setActiveEnvelope(name)}
+                      deactivate={() => setActiveEnvelope()}
                       setActiveEnvelope={setActiveEnvelope}
                     />
                   )}

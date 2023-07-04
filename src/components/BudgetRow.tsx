@@ -7,6 +7,9 @@ interface BudgetRowProps {
   name: string
   envlp: Envelope
   allocated: number
+  active: boolean
+  activate: () => void
+  deactivate: () => void
   setActiveEnvelope: Setter<string>
 }
 
@@ -18,19 +21,18 @@ export const BudgetRow = (props: BudgetRowProps) => {
 
   return (
     <tr
-      class={`${editing() && "bg-sky-200"} group rounded p-2`}
+      class={`${props.active && "bg-sky-200"} group rounded p-2`}
       onClick={(e) => {
         e.preventDefault()
-        setEditing(true)
+        props.activate()
         inputRef.focus()
         inputRef.select()
-        props.setActiveEnvelope(props.name)
       }}
     >
       <td>{props.name}</td>
       <td>
         <Show
-          when={editing()}
+          when={props.active}
           fallback={
             <div class="mr-2 py-1">
               <div
@@ -49,7 +51,7 @@ export const BudgetRow = (props: BudgetRowProps) => {
               name="allocate"
               onSubmit={(e) => {
                 e.preventDefault()
-                setEditing(false)
+                props.deactivate()
               }}
             >
               <input
@@ -67,7 +69,7 @@ export const BudgetRow = (props: BudgetRowProps) => {
                   )
                 }
                 ref={inputRef!}
-                onBlur={() => setEditing(false)}
+                onBlur={props.deactivate}
               />
             </form>
           </div>
