@@ -58,13 +58,11 @@ export const BudgetRow = (props: BudgetRowProps) => {
                 type="text"
                 class=" w-full rounded"
                 name="allocated"
-                value={
-                  state.envelopes[props.name].allocated[state.currentMonth]
-                }
+                value={state.envelopes[props.name].allocated[state.activeMonth]}
                 onChange={(e) =>
                   allocate(
                     props.name,
-                    state.currentMonth,
+                    state.activeMonth,
                     parseFloat(e.target.value)
                   )
                 }
@@ -82,7 +80,7 @@ export const BudgetRow = (props: BudgetRowProps) => {
         })}
       </td>
       <td>
-        {netBalance()[props.name][state.currentMonth].toLocaleString("en-us", {
+        {netBalance()[props.name][state.activeMonth].toLocaleString("en-us", {
           style: "currency",
           currency: "USD",
         })}

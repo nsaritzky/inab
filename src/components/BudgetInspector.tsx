@@ -16,7 +16,7 @@ export const BudgetInspector = (props: BudgetInspectorProps) => {
           <span class="font-bold">Available Balance</span>
           <span>
             {displayUSD(
-              netBalance()[props.activeEnvelope()!][state.currentMonth]
+              netBalance()[props.activeEnvelope()!][state.activeMonth]
             )}
           </span>
         </div>
@@ -24,7 +24,7 @@ export const BudgetInspector = (props: BudgetInspectorProps) => {
           <span>Leftover from last month</span>
           <span>
             {displayUSD(
-              netBalance()[props.activeEnvelope()!][state.currentMonth - 1]
+              netBalance()[props.activeEnvelope()!][state.activeMonth - 1]
             )}
           </span>
         </div>
@@ -33,7 +33,7 @@ export const BudgetInspector = (props: BudgetInspectorProps) => {
           <span>
             {displayUSD(
               state.envelopes[props.activeEnvelope()!].allocated[
-                state.currentMonth
+                state.activeMonth
               ]
             )}
           </span>
@@ -43,7 +43,7 @@ export const BudgetInspector = (props: BudgetInspectorProps) => {
           <span>
             {displayUSD(
               state.transactions
-                .filter((txn) => dateToIndex(txn.date) == state.currentMonth)
+                .filter((txn) => dateToIndex(txn.date) == state.activeMonth)
                 .filter((txn) => txn.envelope === props.activeEnvelope())
                 .reduce((sum, txn) => sum + txn.amount, 0)
             )}

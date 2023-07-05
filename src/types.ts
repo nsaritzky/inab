@@ -41,6 +41,7 @@ export type Panel = "transactions" | "budget"
 export interface Store {
   transactions: Transaction[]
   unallocated: number
+  activeMonth: number
   currentMonth: number
   envelopes: Record<string, Envelope>
   accounts: string[]

@@ -2,10 +2,17 @@ import { describe, expect, test } from "vitest"
 import { render, screen, fireEvent, getAllByRole } from "solid-testing-library"
 import { TransactionView } from "./transactionView"
 import "@testing-library/jest-dom"
+import { createCentralStore } from "../store"
+import { createContext } from "solid-js"
+import { CentralStoreContext } from "../App"
 
 test("the add transaction button causes the form to pop up", () => {
-  render(() => <TransactionView />)
-
+  const store = createCentralStore()
+  render(() => (
+    <CentralStoreContext.Provider value={store}>
+      <TransactionView />
+    </CentralStoreContext.Provider>
+  ))
   const button = screen.getByRole("button", { name: "Add transaction" })
   expect(button).toBeInTheDocument()
 
@@ -19,8 +26,12 @@ test("the add transaction button causes the form to pop up", () => {
 })
 
 test("submitting a new transaction form causes a new row to appear", async () => {
-  render(() => <TransactionView />)
-
+  const store = createCentralStore()
+  render(() => (
+    <CentralStoreContext.Provider value={store}>
+      <TransactionView />
+    </CentralStoreContext.Provider>
+  ))
   fireEvent.click(screen.getByRole("button", { name: "Add transaction" }))
   const form = screen.getByRole("form", { name: "Edit Transaction" })
   const input = screen.getByRole<HTMLInputElement>("textbox", {

@@ -7,6 +7,11 @@ import { makePersisted } from "@solid-primitives/storage"
 
 export const DAY_ONE = new Date("2023-01-01T00:00:01")
 const ZEROS: number[] = Array(50).fill(0)
+const TODAY = new Date()
+const currentMonth =
+  12 * (TODAY.getFullYear() - DAY_ONE.getFullYear()) +
+  TODAY.getMonth() -
+  DAY_ONE.getMonth()
 
 const sampleTxns: Transaction[] = [
   {
@@ -31,7 +36,8 @@ const sampleTxns: Transaction[] = [
 export const initialState: Store = {
   transactions: [],
   accounts: [],
-  currentMonth: 5,
+  activeMonth: 5,
+  currentMonth,
   unallocated: 0,
   envelopes: {
     Rent: {
@@ -50,8 +56,8 @@ export const createCentralStore = () => {
   const [state, setState] = makePersisted<Store>(createStore(initialState), {
     deserialize: (data) => JSON.parse(data, dateParser),
   })
-  if (state.currentMonth > ZEROS.length) {
-    setState("currentMonth", 0)
+  if (state.activeMonth > ZEROS.length) {
+    setState("activeMonth", 0)
   }
 
   const addTransaction = (
@@ -144,7 +150,7 @@ export const createCentralStore = () => {
       const activity = state.transactions
         .filter(
           (txn) =>
-            txn.envelope == nm && dateToIndex(txn.date) == state.currentMonth
+            txn.envelope == nm && dateToIndex(txn.date) == state.activeMonth
         )
         .reduce((sum, txn) => sum + txn.amount, 0)
       Object.assign(result, { [nm]: activity })
@@ -189,9 +195,9 @@ export const createCentralStore = () => {
     return result
   })
 
-  const setIncMonth = () => setState("currentMonth", (n) => n + 1)
-  const setDecMonth = () => setState("currentMonth", (n) => n - 1)
-  const setMonth = (i: number) => setState("currentMonth", i)
+  const setIncMonth = () => setState("activeMonth", (n) => n + 1)
+  const setDecMonth = () => setState("activeMonth", (n) => n - 1)
+  const setMonth = (i: number) => setState("activeMonth", i)
 
   const setPanel = (panel: Panel) => setState("panel", panel)
 

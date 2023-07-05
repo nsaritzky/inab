@@ -59,7 +59,7 @@ export const Budget: Component<BudgetProps> = (props) => {
                     <BudgetRow
                       name={name}
                       envlp={envlp}
-                      allocated={getAllocated(state.currentMonth, name)}
+                      allocated={getAllocated(state.activeMonth, name)}
                       active={activeEnvelope() == name}
                       activate={() => setActiveEnvelope(name)}
                       deactivate={() => setActiveEnvelope()}

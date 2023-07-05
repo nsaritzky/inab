@@ -9,7 +9,7 @@ import { For } from "solid-js"
 import { VsClose, VsTriangleDown } from "solid-icons/vs"
 
 interface MonthSelectorProps {
-  currentMonth: MonthYear
+  activeMonth: MonthYear
 }
 
 const MONTHS = [
@@ -30,8 +30,9 @@ const MONTHS = [
 type Month = (typeof MONTHS)[number]
 
 interface PopupProps {
-  currentMonth: Month
+  activeMonth: Month
   currentYear: number
+  currentMonth: number
   setMonth: (i: number) => void
 }
 
@@ -67,7 +68,9 @@ const MonthPopover = (props: PopupProps) => {
             <button
               onClick={() => props.setMonth(toMonthIndex(month, year()))}
               class={`${
-                month == props.currentMonth && year() == props.currentYear
+                month == props.activeMonth && year() == props.currentYear
+                  ? "bg-blue-500 text-white"
+                  : toMonthIndex(month, year()) == props.currentMonth
                   ? "bg-slate-300 text-blue-500"
                   : "hover:bg-slate-200"
               } m-2 rounded p-1`}
@@ -84,9 +87,9 @@ const MonthPopover = (props: PopupProps) => {
 const MonthSelector: Component = () => {
   const [state, { setDecMonth, setIncMonth, setMonth }] =
     useContext(CentralStoreContext)!
-  const currentMonth = () => MONTHS[state.currentMonth % 12]
+  const activeMonth = () => MONTHS[state.activeMonth % 12]
   const currentYear = () =>
-    DAY_ONE.getFullYear() + Math.floor(state.currentMonth / 12)
+    DAY_ONE.getFullYear() + Math.floor(state.activeMonth / 12)
 
   return (
     <div class="align-center flex h-8">
@@ -101,7 +104,7 @@ const MonthSelector: Component = () => {
       <Popover.Root>
         <Popover.Trigger>
           <div class="flex items-center">
-            <div class="w-20">{`${currentMonth()} ${currentYear()}`}</div>
+            <div class="w-20">{`${activeMonth()} ${currentYear()}`}</div>
             <VsTriangleDown />
           </div>
         </Popover.Trigger>
@@ -110,7 +113,8 @@ const MonthSelector: Component = () => {
             <Popover.Arrow />
             <div class="flex">
               <MonthPopover
-                currentMonth={currentMonth()}
+                activeMonth={activeMonth()}
+                currentMonth={state.currentMonth}
                 currentYear={currentYear()}
                 setMonth={setMonth}
               />
