@@ -32,7 +32,7 @@ export function TextField(props: TextFieldProps) {
       validationState={props.error ? "invalid" : "valid"}
     >
       <Show when={props.label}>
-        <Kobalte.Label>{props.label}</Kobalte.Label>
+        <Kobalte.Label class="mr-2">{props.label}</Kobalte.Label>
       </Show>
       <Show
         when={props.multiline}

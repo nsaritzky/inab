@@ -41,6 +41,7 @@
     "@solid-primitives/storage": "^2.0.0",
     "@thisbeyond/solid-select": "^0.14.0",
     "@types/uuid": "^9.0.2",
+    "date-fns": "^2.30.0",
     "lucide-solid": "^0.252.0",
     "solid-icons": "^1.0.8",
     "solid-js": "^1.7.6",

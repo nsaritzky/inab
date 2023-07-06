@@ -19,6 +19,7 @@ interface BudgetProps {}
 export const Budget: Component<BudgetProps> = (props) => {
   const [state, _] = useContext(CentralStoreContext)!
   const [activeEnvelope, setActiveEnvelope] = createSignal<string>()
+  const [editingGoal, setEditingGoal] = createSignal(false)
 
   const getAllocated = (monthIndex: number, envlp: string) =>
     state.envelopes[envlp].allocated[monthIndex]
@@ -61,7 +62,10 @@ export const Budget: Component<BudgetProps> = (props) => {
                       envlp={envlp}
                       allocated={getAllocated(state.activeMonth, name)}
                       active={activeEnvelope() == name}
-                      activate={() => setActiveEnvelope(name)}
+                      activate={() => {
+                        setActiveEnvelope(name)
+                        setEditingGoal(false)
+                      }}
                       deactivate={() => setActiveEnvelope()}
                       setActiveEnvelope={setActiveEnvelope}
                     />
@@ -72,7 +76,11 @@ export const Budget: Component<BudgetProps> = (props) => {
           </div>
           <div class="w-1/3 border">
             <Show when={activeEnvelope()}>
-              <BudgetInspector activeEnvelope={activeEnvelope} />
+              <BudgetInspector
+                activeEnvelope={activeEnvelope()!}
+                editingGoal={editingGoal()}
+                setEditingGoal={setEditingGoal}
+              />
             </Show>
           </div>
         </div>

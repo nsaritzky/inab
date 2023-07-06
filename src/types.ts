@@ -24,6 +24,10 @@ export type Month =
 
 type Year = number
 
+export type GoalType = "Monthly" | "Yearly" | "Weekly"
+export type Goal = { type: GoalType; amount: number; begin: Date; due: Date }
+export type GoalStatus = "green" | "yellow" | "red"
+
 export type MonthYear = `${Month} ${Year}`
 
 export interface Account {
@@ -33,7 +37,7 @@ export interface Account {
 
 export interface Envelope {
   allocated: number[]
-  monthlyGoal: number[]
+  goals: Goal[]
 }
 
 export type Panel = "transactions" | "budget"

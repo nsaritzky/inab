@@ -1,9 +1,30 @@
 import { createStore } from "solid-js/store"
-import type { Store, Transaction, Month, MonthYear, Panel } from "./types"
+import type {
+  Store,
+  Transaction,
+  Month,
+  MonthYear,
+  Panel,
+  Goal,
+  GoalStatus,
+} from "./types"
 import { v4 as uuid } from "uuid"
 import { createEffect, createMemo } from "solid-js"
 import { dateParser, dateToIndex } from "./utilities"
 import { makePersisted } from "@solid-primitives/storage"
+import {
+  closestIndexTo,
+  closestTo,
+  compareDesc,
+  endOfToday,
+  getDay,
+  getDayOfYear,
+  isBefore,
+  isSameMonth,
+  nextDay,
+  setDate,
+  setDayOfYear,
+} from "date-fns"
 
 export const DAY_ONE = new Date("2023-01-01T00:00:01")
 const ZEROS: number[] = Array(50).fill(0)
@@ -42,24 +63,31 @@ export const initialState: Store = {
   envelopes: {
     Rent: {
       allocated: [0, 0, 0, 0, 0, 1000].concat(ZEROS),
-      monthlyGoal: ZEROS,
+      goals: [
+        {
+          type: "Monthly",
+          amount: 700,
+          begin: new Date("2023-06-01"),
+          due: new Date("2023-06-15"),
+        },
+      ],
     },
     Groceries: {
       allocated: [0, 0, 0, 0, 0, 300].concat(ZEROS),
-      monthlyGoal: ZEROS,
+      goals: [],
     },
   },
   panel: "transactions",
 }
 
-export const createCentralStore = () => {
-  const [state, setState] = makePersisted<Store>(createStore(initialState), {
-    deserialize: (data) => JSON.parse(data, dateParser),
-  })
-  if (state.activeMonth > ZEROS.length) {
-    setState("activeMonth", 0)
-  }
+const [state, setState] = makePersisted<Store>(createStore(initialState), {
+  deserialize: (data) => JSON.parse(data, dateParser),
+})
+if (state.activeMonth > ZEROS.length) {
+  setState("activeMonth", 0)
+}
 
+export const createCentralStore = () => {
   const addTransaction = (
     idFn: () => string,
     {
@@ -81,7 +109,7 @@ export const createCentralStore = () => {
       { id: idFn(), amount, date, payee, envelope, account, description },
     ])
     if (!Object.keys(state.envelopes).includes(envelope)) {
-      setState("envelopes", envelope, { allocated: ZEROS, monthlyGoal: ZEROS })
+      setState("envelopes", envelope, { allocated: ZEROS, goals: [] })
     }
   }
 
@@ -132,6 +160,9 @@ export const createCentralStore = () => {
           description,
         },
       ])
+    }
+    if (!Object.keys(state.envelopes).includes(envelope)) {
+      setState("envelopes", envelope, { allocated: ZEROS, goals: [] })
     }
   }
 
@@ -195,6 +226,92 @@ export const createCentralStore = () => {
     return result
   })
 
+  const setGoal = (envelope: string, goal: Goal): void => {
+    setState("envelopes", envelope, "goals", (goals) => [
+      ...goals.filter((g) => !isSameMonth(g.begin, goal.begin)),
+      goal,
+    ])
+  }
+
+  const deleteGoal = (envelope: string, goal: Goal | undefined): void => {
+    setState("envelopes", envelope, "goals", (goals) =>
+      goals.filter((g) => g.due != goal?.due)
+    )
+  }
+
+  const getGoalAsOf = createMemo(
+    () =>
+      (envelope: string, date: Date): Goal | undefined => {
+        const earlierGoals = state.envelopes[envelope].goals.filter((g) =>
+          isBefore(g.begin, date)
+        )
+        const i = closestIndexTo(
+          date,
+          earlierGoals.map((g) => g.begin)
+        )
+        return i != undefined ? earlierGoals[i] : undefined
+      }
+  )
+
+  const updateGoalDueDate = (envelope: string, date: Date) => {
+    const g = getGoalAsOf()(envelope, date)
+    if (g) {
+      let newDueDate: Date
+      switch (g.type) {
+        case "Weekly": {
+          newDueDate = nextDay(date, getDay(g.due))
+        }
+        case "Monthly": {
+          newDueDate = setDate(date, g.due.getDate())
+        }
+        case "Yearly":
+          {
+            newDueDate = setDayOfYear(date, getDayOfYear(g.due))
+          }
+          setState(
+            "envelopes",
+            envelope,
+            "goals",
+            (goal) => goal == getGoalAsOf()(envelope, date),
+            (goal) => ({ ...goal, due: newDueDate })
+          )
+      }
+    }
+  }
+
+  const getGoalStatus = (
+    envelope: string,
+    date: Date
+  ): GoalStatus | undefined => {
+    const g = getGoalAsOf()(envelope, date)
+    if (g) {
+      let dueDate: Date
+      switch (g.type) {
+        case "Weekly": {
+          dueDate = nextDay(date, getDay(g.due))
+        }
+        case "Monthly": {
+          dueDate = setDate(date, g.due.getDate())
+        }
+        case "Yearly": {
+          dueDate = setDayOfYear(date, getDayOfYear(g.due))
+        }
+      }
+      if (
+        state.envelopes[envelope].allocated[dateToIndex(endOfToday())] >=
+        g.amount
+      ) {
+        return "green"
+      } else {
+        if (isBefore(dueDate, endOfToday())) {
+          return "yellow"
+        } else {
+          return "red"
+        }
+      }
+    }
+  }
+
   const setIncMonth = () => setState("activeMonth", (n) => n + 1)
   const setDecMonth = () => setState("activeMonth", (n) => n - 1)
   const setMonth = (i: number) => setState("activeMonth", i)
@@ -212,6 +329,10 @@ export const createCentralStore = () => {
       monthlyBalances,
       netBalance,
       accountBalances,
+      setGoal,
+      deleteGoal,
+      getGoalAsOf,
+      getGoalStatus,
       setIncMonth,
       setDecMonth,
       setMonth,

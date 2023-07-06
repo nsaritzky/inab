@@ -67,7 +67,6 @@ export const BudgetRow = (props: BudgetRowProps) => {
                   )
                 }
                 ref={inputRef!}
-                onBlur={props.deactivate}
               />
             </form>
           </div>
