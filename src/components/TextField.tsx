@@ -3,6 +3,7 @@ import { type JSX, Show, splitProps } from "solid-js"
 
 type TextFieldProps = {
   name: string
+  numeric?: boolean
   ariaLabel?: string
   type?: "text" | "email" | "tel" | "password" | "url" | "date" | undefined
   label?: string | undefined

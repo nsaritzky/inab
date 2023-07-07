@@ -1,11 +1,11 @@
 export interface Transaction {
-  id: string
-  description: string
-  payee: string
-  amount: number
-  envelope: string
-  account: string
-  date: Date
+  id: string;
+  description: string;
+  payee: string;
+  amount: number;
+  envelope: string;
+  account: string;
+  date: Date;
 }
 
 export type Month =
@@ -20,34 +20,34 @@ export type Month =
   | "SEP"
   | "OCT"
   | "NOV"
-  | "DEC"
+  | "DEC";
 
-type Year = number
+type Year = number;
 
-export type GoalType = "Monthly" | "Yearly" | "Weekly"
-export type Goal = { type: GoalType; amount: number; begin: Date; due: Date }
-export type GoalStatus = "green" | "yellow" | "red"
+export type GoalType = "Monthly" | "Yearly" | "Weekly";
+export type Goal = { type: GoalType; amount: number; begin: Date; due: Date };
+export type GoalStatus = "green" | "yellow" | "red";
 
-export type MonthYear = `${Month} ${Year}`
+export type MonthYear = `${Month} ${Year}`;
 
 export interface Account {
-  name: string
-  balance: number
+  name: string;
+  balance: number;
 }
 
 export interface Envelope {
-  allocated: number[]
-  goals: Goal[]
+  allocated: number[];
+  goals: Goal[];
 }
 
-export type Panel = "transactions" | "budget"
+export type Panel = "transactions" | "budget";
 
 export interface Store {
-  transactions: Transaction[]
-  unallocated: number
-  activeMonth: number
-  currentMonth: number
-  envelopes: Record<string, Envelope>
-  accounts: string[]
-  panel: Panel
+  transactions: Transaction[];
+  unallocated: number;
+  activeMonth: number;
+  currentMonth: number;
+  envelopes: Record<string, Envelope>;
+  accounts: string[];
+  // panel: Panel
 }

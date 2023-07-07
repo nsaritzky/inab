@@ -1,10 +1,10 @@
-import { useContext } from "solid-js"
-import { CentralStoreContext } from "../App"
+import { useContext } from "solid-js";
+import { CentralStoreContext } from "../root";
 
 const Unallocated = () => {
-  const [state, {}] = useContext(CentralStoreContext)
-  const allAllocated = () => state.unallocated == 0
-  const overAllocated = () => state.unallocated < 0
+  const [state, {}] = useContext(CentralStoreContext);
+  const allAllocated = () => state.unallocated == 0;
+  const overAllocated = () => state.unallocated < 0;
 
   return (
     <div class="flex-1">
@@ -24,7 +24,7 @@ const Unallocated = () => {
         })}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Unallocated
+export default Unallocated;

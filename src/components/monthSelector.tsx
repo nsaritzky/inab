@@ -1,15 +1,15 @@
-import { FiChevronLeft, FiChevronRight } from "solid-icons/fi"
-import { MonthYear } from "../types"
-import { Component, Setter, createSignal, useContext } from "solid-js"
-import { CentralStoreContext } from "../App"
-import { Popover, Separator } from "@kobalte/core"
-import { useKeyDownEvent } from "@solid-primitives/keyboard"
-import { DAY_ONE } from "../store"
-import { For } from "solid-js"
-import { VsClose, VsTriangleDown } from "solid-icons/vs"
+import { FiChevronLeft, FiChevronRight } from "solid-icons/fi";
+import { MonthYear } from "../types";
+import { Component, Setter, createSignal, useContext } from "solid-js";
+import { CentralStoreContext } from "../root";
+import { Popover, Separator } from "@kobalte/core";
+import { useKeyDownEvent } from "@solid-primitives/keyboard";
+import { DAY_ONE } from "../store";
+import { For } from "solid-js";
+import { VsClose, VsTriangleDown } from "solid-icons/vs";
 
 interface MonthSelectorProps {
-  activeMonth: MonthYear
+  activeMonth: MonthYear;
 }
 
 const MONTHS = [
@@ -25,24 +25,24 @@ const MONTHS = [
   "OCT",
   "NOV",
   "DEC",
-] as const
+] as const;
 
-type Month = (typeof MONTHS)[number]
+type Month = (typeof MONTHS)[number];
 
 interface PopupProps {
-  activeMonth: Month
-  currentYear: number
-  currentMonth: number
-  setMonth: (i: number) => void
+  activeMonth: Month;
+  currentYear: number;
+  currentMonth: number;
+  setMonth: (i: number) => void;
 }
 
 const MonthPopover = (props: PopupProps) => {
-  const [year, setYear] = createSignal(props.currentYear)
+  const [year, setYear] = createSignal(props.currentYear);
   const toMonthIndex = (month: Month, year: number) =>
     MONTHS.indexOf(month) +
     12 * year -
     DAY_ONE.getMonth() -
-    12 * DAY_ONE.getFullYear()
+    12 * DAY_ONE.getFullYear();
   return (
     <div>
       <div class="flex justify-between">
@@ -81,22 +81,22 @@ const MonthPopover = (props: PopupProps) => {
         </For>
       </div>
     </div>
-  )
-}
+  );
+};
 
 const MonthSelector: Component = () => {
   const [state, { setDecMonth, setIncMonth, setMonth }] =
-    useContext(CentralStoreContext)!
-  const activeMonth = () => MONTHS[state.activeMonth % 12]
+    useContext(CentralStoreContext)!;
+  const activeMonth = () => MONTHS[state.activeMonth % 12];
   const currentYear = () =>
-    DAY_ONE.getFullYear() + Math.floor(state.activeMonth / 12)
+    DAY_ONE.getFullYear() + Math.floor(state.activeMonth / 12);
 
   return (
     <div class="align-center flex h-8">
       <button
         onClick={(e) => {
-          e.preventDefault()
-          setDecMonth()
+          e.preventDefault();
+          setDecMonth();
         }}
       >
         <FiChevronLeft size={24} />
@@ -124,14 +124,14 @@ const MonthSelector: Component = () => {
       </Popover.Root>
       <button
         onClick={(e) => {
-          e.preventDefault()
-          setIncMonth()
+          e.preventDefault();
+          setIncMonth();
         }}
       >
         <FiChevronRight size={24} />
       </button>
     </div>
-  )
-}
+  );
+};
 
-export default MonthSelector
+export default MonthSelector;

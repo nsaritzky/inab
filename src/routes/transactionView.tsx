@@ -1,22 +1,22 @@
-import { For, Show, createEffect, createSignal, useContext } from "solid-js"
-import { TransactionForm } from "./transactionForm"
-import { TransactionRow } from "./transactionRow"
-import { AiOutlinePlusCircle } from "solid-icons/ai"
-import { CentralStoreContext } from "../App"
-import { sort } from "@solid-primitives/signal-builders"
+import { For, Show, createEffect, createSignal, useContext } from "solid-js";
+import { TransactionForm } from "~/components/transactionForm";
+import { TransactionRow } from "~/components//transactionRow";
+import { AiOutlinePlusCircle } from "solid-icons/ai";
+import { CentralStoreContext } from "../root";
+import { sort } from "@solid-primitives/signal-builders";
 
-export const TransactionView = () => {
-  const [state, _] = useContext(CentralStoreContext)!
-  const [editingNewTransaction, setEditingNewTransaction] = createSignal(false)
-  const [activeIndex, setActiveIndex] = createSignal<number>()
+const TransactionView = () => {
+  const [state, _] = useContext(CentralStoreContext)!;
+  const [editingNewTransaction, setEditingNewTransaction] = createSignal(false);
+  const [activeIndex, setActiveIndex] = createSignal<number>();
 
   return (
     <div class="ml-64 w-auto">
       <div class="ml-4 mt-4 text-sm">
         <button
           onClick={(e) => {
-            e.preventDefault()
-            setEditingNewTransaction(true)
+            e.preventDefault();
+            setEditingNewTransaction(true);
           }}
         >
           <div class="flex">
@@ -61,5 +61,7 @@ export const TransactionView = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
+
+export default TransactionView;

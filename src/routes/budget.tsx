@@ -5,35 +5,35 @@ import {
   createEffect,
   createSignal,
   useContext,
-} from "solid-js"
-import type { Month, MonthYear } from "../types"
-import MonthSelector from "./monthSelector"
-import Unallocated from "./unallocated"
-import { CentralStoreContext } from "../App"
-import { BudgetRow } from "./BudgetRow"
-import { BudgetInspector } from "./BudgetInspector"
-import { useKeyDownEvent } from "@solid-primitives/keyboard"
+} from "solid-js";
+import type { Month, MonthYear } from "../types";
+import MonthSelector from "~/components/monthSelector";
+import Unallocated from "~/components/unallocated";
+import { CentralStoreContext } from "../root";
+import { BudgetRow } from "~/components/BudgetRow";
+import { BudgetInspector } from "~/components/BudgetInspector";
+import { useKeyDownEvent } from "@solid-primitives/keyboard";
 
 interface BudgetProps {}
 
-export const Budget: Component<BudgetProps> = (props) => {
-  const [state, _] = useContext(CentralStoreContext)!
-  const [activeEnvelope, setActiveEnvelope] = createSignal<string>()
-  const [editingGoal, setEditingGoal] = createSignal(false)
+const Budget: Component<BudgetProps> = (props) => {
+  const [state, _] = useContext(CentralStoreContext)!;
+  const [activeEnvelope, setActiveEnvelope] = createSignal<string>();
+  const [editingGoal, setEditingGoal] = createSignal(false);
 
   const getAllocated = (monthIndex: number, envlp: string) =>
-    state.envelopes[envlp].allocated[monthIndex]
+    state.envelopes[envlp].allocated[monthIndex];
 
-  const keyDownEvent = useKeyDownEvent()
+  const keyDownEvent = useKeyDownEvent();
 
   createEffect(() => {
-    const e = keyDownEvent()
+    const e = keyDownEvent();
     if (e && activeEnvelope()) {
       if (e.key === "Escape") {
-        setActiveEnvelope()
+        setActiveEnvelope();
       }
     }
-  })
+  });
 
   return (
     <div class="ml-64">
@@ -63,8 +63,8 @@ export const Budget: Component<BudgetProps> = (props) => {
                       allocated={getAllocated(state.activeMonth, name)}
                       active={activeEnvelope() == name}
                       activate={() => {
-                        setActiveEnvelope(name)
-                        setEditingGoal(false)
+                        setActiveEnvelope(name);
+                        setEditingGoal(false);
                       }}
                       deactivate={() => setActiveEnvelope()}
                       setActiveEnvelope={setActiveEnvelope}
@@ -86,5 +86,7 @@ export const Budget: Component<BudgetProps> = (props) => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
+
+export default Budget;

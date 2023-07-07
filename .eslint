@@ -1,7 +1,0 @@
-{
-
-  "parser": "@typescript-eslint/parser", // if not already added
-  "plugins": ["solid"],
-  "extends": ["eslint:recommended", "plugin:solid/typescript"]
-
-}

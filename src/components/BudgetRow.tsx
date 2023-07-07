@@ -1,32 +1,32 @@
-import { Ref, Setter, createSignal, useContext } from "solid-js"
-import type { Envelope, MonthYear } from "../types"
-import { CentralStoreContext } from "../App"
-import { Show } from "solid-js"
+import { Ref, Setter, createSignal, useContext } from "solid-js";
+import type { Envelope, MonthYear } from "../types";
+import { CentralStoreContext } from "../root";
+import { Show } from "solid-js";
 
 interface BudgetRowProps {
-  name: string
-  envlp: Envelope
-  allocated: number
-  active: boolean
-  activate: () => void
-  deactivate: () => void
-  setActiveEnvelope: Setter<string>
+  name: string;
+  envlp: Envelope;
+  allocated: number;
+  active: boolean;
+  activate: () => void;
+  deactivate: () => void;
+  setActiveEnvelope: Setter<string>;
 }
 
 export const BudgetRow = (props: BudgetRowProps) => {
-  let inputRef: HTMLInputElement
+  let inputRef: HTMLInputElement;
   const [state, { envelopeBalances, netBalance, allocate }] =
-    useContext(CentralStoreContext)!
-  const [editing, setEditing] = createSignal(false)
+    useContext(CentralStoreContext)!;
+  const [editing, setEditing] = createSignal(false);
 
   return (
     <tr
       class={`${props.active && "bg-sky-200"} group rounded p-2`}
       onClick={(e) => {
-        e.preventDefault()
-        props.activate()
-        inputRef.focus()
-        inputRef.select()
+        e.preventDefault();
+        props.activate();
+        inputRef.focus();
+        inputRef.select();
       }}
     >
       <td>{props.name}</td>
@@ -50,8 +50,8 @@ export const BudgetRow = (props: BudgetRowProps) => {
             <form
               name="allocate"
               onSubmit={(e) => {
-                e.preventDefault()
-                props.deactivate()
+                e.preventDefault();
+                props.deactivate();
               }}
             >
               <input
@@ -85,5 +85,5 @@ export const BudgetRow = (props: BudgetRowProps) => {
         })}
       </td>
     </tr>
-  )
-}
+  );
+};

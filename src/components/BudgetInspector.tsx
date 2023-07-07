@@ -4,27 +4,27 @@ import {
   createSignal,
   createEffect,
   Setter,
-} from "solid-js"
-import { CentralStoreContext } from "../App"
-import { dateToIndex, displayUSD } from "../utilities"
-import { Show } from "solid-js"
-import { NewGoalForm } from "./NewGoalForm"
-import { BsPlusCircle } from "solid-icons/bs"
+} from "solid-js";
+import { CentralStoreContext } from "../root";
+import { dateToIndex, displayUSD } from "../utilities";
+import { Show } from "solid-js";
+import { NewGoalForm } from "./NewGoalForm";
+import { BsPlusCircle } from "solid-icons/bs";
 
 interface BudgetInspectorProps {
-  activeEnvelope: string
-  editingGoal: boolean
-  setEditingGoal: Setter<boolean>
+  activeEnvelope: string;
+  editingGoal: boolean;
+  setEditingGoal: Setter<boolean>;
 }
 
 export const BudgetInspector = (props: BudgetInspectorProps) => {
   const [state, { netBalance, getGoalAsOf, getGoalStatus }] =
-    useContext(CentralStoreContext)!
+    useContext(CentralStoreContext)!;
 
-  const activeGoal = () => getGoalAsOf()(props.activeEnvelope, new Date())
-  const needed = () => activeGoal()?.amount
+  const activeGoal = () => getGoalAsOf()(props.activeEnvelope, new Date());
+  const needed = () => activeGoal()?.amount;
   const funded = () =>
-    state.envelopes[props.activeEnvelope].allocated[state.activeMonth]
+    state.envelopes[props.activeEnvelope].allocated[state.activeMonth];
 
   return (
     <div class="text-md">
@@ -113,5 +113,5 @@ export const BudgetInspector = (props: BudgetInspectorProps) => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
