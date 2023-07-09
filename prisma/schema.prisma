@@ -1,0 +1,45 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Transaction {
+  id           Int       @id @default(autoincrement())
+  amount       Float
+  envelopeName String?
+  date         DateTime  @default(now())
+  envelope     Envelope? @relation(fields: [envelopeName], references: [name])
+  accountID    Int?
+  account      Account?  @relation(fields: [accountID], references: [id])
+  payee        String?
+  description  String?
+}
+
+model Envelope {
+  name         String        @id
+  transactions Transaction[]
+  goals        Goal[]
+}
+
+model Goal {
+  id           Int      @id @default(autoincrement())
+  type         String // "Monthly", "Yearly", or "Weekly". Should be an enum but SQLite
+  amount       Float
+  due          DateTime
+  begin        DateTime
+  envelopeName String
+  envelope     Envelope @relation(fields: [envelopeName], references: [name])
+}
+
+model Account {
+  id           Int           @id @default(autoincrement())
+  name         String
+  transactions Transaction[]
+}
