@@ -5,5 +5,5 @@ import devtools from "solid-devtools/vite";
 
 export default defineConfig({
   test: { environment: "jsdom", transformMode: { web: [/\.[jt]sx?$/] } },
-  plugins: [solid({ ssr: false }), devtools()],
+  plugins: [solid({ ssr: true }), devtools()],
 });
