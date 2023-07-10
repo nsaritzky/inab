@@ -80,9 +80,7 @@ export const initialState: Store = {
   // panel: "transactions",
 };
 
-const [state, setState] = makePersisted<Store>(createStore(initialState), {
-  deserialize: (data) => JSON.parse(data, dateParser),
-});
+const [state, setState] = createStore(initialState);
 if (state.activeMonth > ZEROS.length) {
   setState("activeMonth", 0);
 }
