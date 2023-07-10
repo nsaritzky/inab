@@ -15,7 +15,9 @@ import { TextField } from "./TextField";
 import { SelectField } from "./SelectField";
 import { ToggleButton, Switch } from "@kobalte/core";
 import { clickOutside } from "../utilities";
-import { Transaction } from "../types";
+import { Transaction } from "@prisma/client";
+import { saveTransactionFn } from "~/db";
+import { createServerAction$ } from "solid-start/server";
 
 interface AddTransactionFormProps {
   setEditingNewTransaction?: Setter<boolean>;
@@ -50,17 +52,18 @@ export const TransactionForm: Component<AddTransactionFormProps> = (props) => {
   const [inflow, setInflow] = createSignal<string>();
   const [outflow, setOutflow] = createSignal<string>();
 
+  const [savingTransaction, saveTransaction] =
+    createServerAction$(saveTransactionFn);
+
   const initialValues: Partial<TransactionForm> = props.txn
     ? {
-        id: props.txn.id,
         inflow: props.txn.amount > 0 ? props.txn.amount.toString() : "",
         outflow:
           props.txn.amount < 0 ? props.txn.amount.toString().slice(1) : "",
         date: props.txn.date.toISOString().split("T")[0],
-        payee: props.txn.payee,
-        envelope: props.txn.envelope,
-        account: props.txn.account,
-        description: props.txn.description,
+        payee: props.txn.payee || undefined,
+        envelope: props.txn.envelopeName || undefined,
+        description: props.txn.description || undefined,
       }
     : { date: new Date().toISOString().split("T")[0] };
 
@@ -78,15 +81,40 @@ export const TransactionForm: Component<AddTransactionFormProps> = (props) => {
       return;
     }
     props.deactivate();
-    editTransaction(props.txn?.id || uuid, {
-      inflow: parseFloat(values.inflow) || 0,
-      outflow: parseFloat(values.outflow) || 0,
-      date: new Date(`${values.date} 00:00:01`),
-      payee: values.payee || "",
-      envelope: inflow() ? "" : values.envelope,
-      account: values.account,
-      description: values.description || "",
-    });
+    /* editTransaction(props.txn?.id || uuid, {
+     *   inflow: parseFloat(values.inflow) || 0,
+     *   outflow: parseFloat(values.outflow) || 0,
+     *   date: new Date(`${values.date} 00:00:01`),
+     *   payee: values.payee || "",
+     *   envelope: inflow() ? "" : values.envelope,
+     *   account: values.account,
+     *   description: values.description || "",
+     * }); */
+    const amount =
+      (parseFloat(values.inflow) || 0) - (parseFloat(values.outflow) || 0);
+    saveTransaction(
+      values.envelope
+        ? {
+            id: props.txn?.id,
+            amount,
+            date: new Date(`${values.date} 00:00:01`),
+            payee: values.payee,
+            envelope: {
+              connectOrCreate: {
+                where: { name: values.envelope },
+                create: { name: values.envelope },
+              },
+            },
+            description: values.description,
+          }
+        : {
+            id: props.txn?.id,
+            amount,
+            date: new Date(`${values.date} 00:00:01`),
+            payee: values.payee,
+            description: values.description,
+          }
+    );
     reset(newTransactionForm);
   };
 

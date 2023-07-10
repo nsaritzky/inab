@@ -1,14 +1,33 @@
-import { For, Show, createEffect, createSignal, useContext } from "solid-js";
+import {
+  For,
+  Show,
+  createEffect,
+  createSignal,
+  useContext,
+  Suspense,
+} from "solid-js";
 import { TransactionForm } from "~/components/transactionForm";
 import { TransactionRow } from "~/components//transactionRow";
 import { AiOutlinePlusCircle } from "solid-icons/ai";
 import { CentralStoreContext } from "../root";
 import { sort } from "@solid-primitives/signal-builders";
+import { getTransactions } from "~/db";
+import { type RouteDataArgs, useRouteData } from "solid-start";
+import { compareAsc, compareDesc } from "date-fns";
+import { createServerData$ } from "solid-start/server";
+import { Transaction } from "@prisma/client";
+import { coerceToDate } from "~/utilities";
+
+export const routeData = (props: RouteDataArgs) => {
+  const records = createServerData$(getTransactions, { initialValue: [] });
+  return () => records()?.map((t) => ({ ...t, date: coerceToDate(t.date) }));
+};
 
 const TransactionView = () => {
   const [state, _] = useContext(CentralStoreContext)!;
   const [editingNewTransaction, setEditingNewTransaction] = createSignal(false);
   const [activeIndex, setActiveIndex] = createSignal<number>();
+  const transactions = useRouteData<typeof routeData>();
 
   return (
     <div class="ml-64 w-auto">
@@ -43,21 +62,26 @@ const TransactionView = () => {
               deactivate={() => setEditingNewTransaction(false)}
             />
           </Show>
-          <For
-            each={sort(
-              state.transactions,
-              (a, b) => a.date.getDate() - b.date.getDate()
-            )()}
-          >
-            {(txn, i) => (
-              <TransactionRow
-                txn={txn}
-                active={activeIndex() == i()}
-                activate={() => setActiveIndex(i())}
-                deactivate={() => setActiveIndex(-1)}
-              />
-            )}
-          </For>
+
+          <Suspense>
+            <For
+              each={sort(transactions()!, (a, b) =>
+                compareDesc(a.date, b.date)
+              )()}
+            >
+              {(txn, i) => {
+                console.log(txn);
+                return (
+                  <TransactionRow
+                    txn={txn}
+                    active={activeIndex() == i()}
+                    activate={() => setActiveIndex(i())}
+                    deactivate={() => setActiveIndex(-1)}
+                  />
+                );
+              }}
+            </For>
+          </Suspense>
         </div>
       </div>
     </div>

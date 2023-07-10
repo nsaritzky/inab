@@ -1,9 +1,14 @@
 import { Setter, Show, createEffect, useContext } from "solid-js";
-import type { Transaction } from "../types";
+import type { Transaction } from "@prisma/client";
 import { BiRegularPencil, BiRegularTrash } from "solid-icons/bi";
 import { CentralStoreContext } from "../root";
 import { TransactionForm } from "./transactionForm";
 import { useKeyDownEvent } from "@solid-primitives/keyboard";
+import {
+  createServerAction$,
+  createServerMultiAction$,
+} from "solid-start/server";
+import { deleteTransaction } from "~/db";
 
 interface TransactionRowProps {
   txn: Transaction;
@@ -14,6 +19,7 @@ interface TransactionRowProps {
 
 interface TransactionDisplayProps {
   txn: Transaction;
+  doDelete: (txn: Transaction) => Promise<void>;
   activate: () => number;
   deactivate: () => void;
 }
@@ -21,8 +27,6 @@ interface TransactionDisplayProps {
 interface TransactionEditProps {}
 
 const TransactionDisplay = (props: TransactionDisplayProps) => {
-  const [_, { deleteTransaction }] = useContext(CentralStoreContext)!;
-
   return (
     <div
       class="mb-1 table-row pt-1 text-xs"
@@ -47,8 +51,8 @@ const TransactionDisplay = (props: TransactionDisplayProps) => {
       </div>
       <div class="table-cell ">{props.txn.date.toLocaleDateString()}</div>
       <div class="table-cell ">{props.txn.payee}</div>
-      <div class="table-cell ">{props.txn.envelope}</div>
-      <div class="table-cell ">{props.txn.account}</div>
+      <div class="table-cell ">{props.txn.envelopeName}</div>
+      <div class="table-cell ">{props.txn.accountID}</div>
       <div class="table-cell ">{props.txn.description}</div>
       <div class="table-cell ">
         <button
@@ -56,7 +60,7 @@ const TransactionDisplay = (props: TransactionDisplayProps) => {
           class="rounded bg-red-300 p-1"
           onClick={(e) => {
             e.preventDefault();
-            deleteTransaction(props.txn.id);
+            props.doDelete(props.txn);
             props.deactivate();
           }}
         >
@@ -69,6 +73,7 @@ const TransactionDisplay = (props: TransactionDisplayProps) => {
 
 export const TransactionRow = (props: TransactionRowProps) => {
   const keyDownEvent = useKeyDownEvent();
+  const [doingDelete, doDelete] = createServerAction$(deleteTransaction);
 
   createEffect(() => {
     const e = keyDownEvent();
@@ -80,8 +85,13 @@ export const TransactionRow = (props: TransactionRowProps) => {
   });
 
   return (
-    <Show when={props.active} fallback={<TransactionDisplay {...props} />}>
-      <TransactionForm txn={props.txn} deactivate={props.deactivate} />
+    <Show when={!doingDelete.pending}>
+      <Show
+        when={props.active}
+        fallback={<TransactionDisplay doDelete={doDelete} {...props} />}
+      >
+        <TransactionForm txn={props.txn} deactivate={props.deactivate} />
+      </Show>
     </Show>
   );
 };
