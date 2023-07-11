@@ -13,11 +13,7 @@ import { dateToIndex } from "~/utilities"
 
 interface BudgetRowProps {
   name: string
-<<<<<<< HEAD
-  envlp: Envelope & {
-=======
   envelope: Envelope & {
->>>>>>> 41a4f80 (Integrated main budget pane with db)
     transactions: Transaction[]
     goals: Goal[]
     allocated: number[]
@@ -36,25 +32,11 @@ export const BudgetRow = (props: BudgetRowProps) => {
   const [editing, setEditing] = createSignal(false)
 
   const activity = () =>
-<<<<<<< HEAD
-    props.envlp.transactions
-=======
     props.envelope.transactions
->>>>>>> 41a4f80 (Integrated main budget pane with db)
       .filter((txn) => dateToIndex(txn.date) === state.activeMonth)
       .reduce((sum, txn) => sum + txn.amount, 0)
 
   const monthlyBalances = () =>
-<<<<<<< HEAD
-    props.envlp.allocated.map(
-      (x, i) =>
-        x +
-        props.envlp.transactions
-          .filter(
-            (txn) =>
-              dateToIndex(txn.date) == i &&
-              txn.envelopeName === props.envlp.name
-=======
     props.envelope.allocated.map(
       (x, i) =>
         x +
@@ -63,7 +45,6 @@ export const BudgetRow = (props: BudgetRowProps) => {
             (txn) =>
               dateToIndex(txn.date) == i &&
               txn.envelopeName === props.envelope.name
->>>>>>> 41a4f80 (Integrated main budget pane with db)
           )
           .reduce((sum, txn) => sum + txn.amount, 0)
     )
@@ -94,11 +75,7 @@ export const BudgetRow = (props: BudgetRowProps) => {
               <div
                 class={`rounded outline-2 outline-blue-500 group-hover:outline`}
               >
-<<<<<<< HEAD
-                {props.envlp.allocated[state.activeMonth].toLocaleString(
-=======
                 {props.envelope.allocated[state.activeMonth].toLocaleString(
->>>>>>> 41a4f80 (Integrated main budget pane with db)
                   "en-us",
                   {
                     style: "currency",
@@ -120,11 +97,7 @@ export const BudgetRow = (props: BudgetRowProps) => {
                 type="text"
                 class=" w-full rounded"
                 name="amount"
-<<<<<<< HEAD
-                value={props.envlp.allocated[state.activeMonth]}
-=======
                 value={props.envelope.allocated[state.activeMonth]}
->>>>>>> 41a4f80 (Integrated main budget pane with db)
                 ref={inputRef!}
               />
               <input type="hidden" name="envelopeName" value={props.name} />
