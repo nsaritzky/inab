@@ -1,10 +1,14 @@
-import { useContext } from "solid-js";
-import { CentralStoreContext } from "../root";
+import { useContext } from "solid-js"
+import { CentralStoreContext } from "../root"
 
-const Unallocated = () => {
-  const [state, {}] = useContext(CentralStoreContext);
-  const allAllocated = () => state.unallocated == 0;
-  const overAllocated = () => state.unallocated < 0;
+interface Props {
+  unallocated: number | undefined
+}
+
+const Unallocated = (props: Props) => {
+  const allAllocated = () => props.unallocated == 0
+  const overAllocated = () =>
+    props.unallocated ? props.unallocated < 0 : false
 
   return (
     <div class="flex-1">
@@ -18,13 +22,13 @@ const Unallocated = () => {
         } rounded p-4`}
       >
         Unallocated:{" "}
-        {state.unallocated.toLocaleString("en-us", {
+        {props.unallocated?.toLocaleString("en-us", {
           style: "currency",
           currency: "USD",
         })}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Unallocated;
+export default Unallocated

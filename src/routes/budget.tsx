@@ -15,7 +15,7 @@ import { BudgetInspector } from "~/components/BudgetInspector"
 import { useKeyDownEvent } from "@solid-primitives/keyboard"
 import { useRouteData, type RouteDataArgs } from "solid-start"
 import { createServerAction$, createServerData$ } from "solid-start/server"
-import { getEnvelopes, setAllocation } from "~/db"
+import { getEnvelopes, getTransactions, setAllocation } from "~/db"
 import { Envelope, EnvelopePayload, Prisma, Transaction } from "@prisma/client"
 import { coerceToDate, dateToIndex, parseDates } from "~/utilities"
 import { Suspense } from "solid-js"
@@ -28,15 +28,11 @@ const ZEROS: number[] = Array(50).fill(0)
 interface BudgetProps {}
 
 export const routeData = (props: RouteDataArgs) => {
-  const records = createServerData$(getEnvelopes)
-
-  return () =>
-    records()?.map((e) => ({
+  const envelopes = createServerData$(getEnvelopes)
+  const transactions = createServerData$(getTransactions)
+  return () => ({
+    envelopes: envelopes()?.map((e) => ({
       ...e,
-      transactions: e.transactions.map((txn) => ({
-        ...txn,
-        date: coerceToDate(txn.date),
-      })),
       goals: e.goals.map((g) => ({
         ...g,
         begin: coerceToDate(g.begin),
@@ -47,14 +43,19 @@ export const routeData = (props: RouteDataArgs) => {
           updateAt(allocated.monthIndex, allocated.amount)(arr),
         ZEROS
       ),
-    }))
+    })),
+    transactions: transactions()?.map((txn) => ({
+      ...txn,
+      date: coerceToDate(txn.date),
+    })),
+  })
 }
 
 const Budget: Component<BudgetProps> = (props) => {
-  const [state, _] = useContext(CentralStoreContext)!
+  /* const [state, _] = useContext(CentralStoreContext)! */
   const [activeEnvelope, setActiveEnvelope] = createSignal<string>()
   const [editingGoal, setEditingGoal] = createSignal(false)
-  const envelopes = useRouteData<typeof routeData>()
+  const data = useRouteData<typeof routeData>()
 
   const [allocating, allocate] = createServerAction$(
     async (form: FormData, { request }) => {
@@ -66,12 +67,31 @@ const Budget: Component<BudgetProps> = (props) => {
     }
   )
 
-  const envelopeMonthlyTotal = (
-    envelope: Envelope & { transactions: Transaction[] }
-  ) =>
-    envelope.transactions
-      .filter((txn) => dateToIndex(txn.date) === state.activeMonth)
+  const totalDeposited = () =>
+    data()
+      .transactions?.filter((txn) => txn.amount > 0)
       .reduce((sum, txn) => sum + txn.amount, 0)
+
+  const totalAllocated = () =>
+    data()
+      .envelopes?.map((envlp) => envlp.allocated)
+      .reduce((acc, arr) => [...acc, ...arr], [])
+      .reduce((sum, a) => sum + a, 0)
+
+  const unallocated = () =>
+    totalDeposited() != undefined && totalAllocated() != undefined
+      ? totalDeposited()! - totalAllocated()!
+      : undefined
+
+  const envelopes = () =>
+    data().envelopes &&
+    data().transactions &&
+    Object.values(data().envelopes!).map((envlp) => ({
+      ...envlp,
+      transactions: data().transactions!.filter(
+        (txn) => txn.envelopeName === envlp.name
+      ),
+    }))
 
   const keyDownEvent = useKeyDownEvent()
 
@@ -89,7 +109,9 @@ const Budget: Component<BudgetProps> = (props) => {
       <div class="ml-4 mt-4 h-screen">
         <div class="mb-2 flex">
           <MonthSelector />
-          <Unallocated />
+          <Suspense>
+            <Unallocated unallocated={unallocated()} />
+          </Suspense>
           <div class="flex-1"></div>
         </div>
         <div class="flex h-full">

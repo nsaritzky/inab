@@ -10,7 +10,7 @@ export const getTransactions = async () => await db.transaction.findMany()
 
 export const getEnvelopes = async () => {
   const es = await db.envelope.findMany({
-    include: { transactions: true, goals: true, allocated: true },
+    include: { goals: true, allocated: true },
   })
   return es
 }
