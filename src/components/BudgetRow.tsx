@@ -1,32 +1,69 @@
-import { Ref, Setter, createSignal, useContext } from "solid-js";
-import type { Envelope, MonthYear } from "../types";
-import { CentralStoreContext } from "../root";
-import { Show } from "solid-js";
+import {
+  Ref,
+  Setter,
+  createSignal,
+  useContext,
+  ParentComponent,
+} from "solid-js"
+import type { Envelope, Goal, Transaction } from "@prisma/client"
+import { CentralStoreContext } from "../root"
+import { Show } from "solid-js"
+import { FormProps } from "solid-start"
+import { dateToIndex } from "~/utilities"
 
 interface BudgetRowProps {
-  name: string;
-  envlp: Envelope;
-  allocated: number;
-  active: boolean;
-  activate: () => void;
-  deactivate: () => void;
-  setActiveEnvelope: Setter<string>;
+  name: string
+  envlp: Envelope & {
+    transactions: Transaction[]
+    goals: Goal[]
+    allocated: number[]
+  }
+  Form: ParentComponent<FormProps>
+  active: boolean
+  activate: () => void
+  deactivate: () => void
+  setActiveEnvelope: Setter<string>
 }
 
 export const BudgetRow = (props: BudgetRowProps) => {
-  let inputRef: HTMLInputElement;
+  let inputRef: HTMLInputElement
   const [state, { envelopeBalances, netBalance, allocate }] =
-    useContext(CentralStoreContext)!;
-  const [editing, setEditing] = createSignal(false);
+    useContext(CentralStoreContext)!
+  const [editing, setEditing] = createSignal(false)
+
+  const activity = () =>
+    props.envlp.transactions
+      .filter((txn) => dateToIndex(txn.date) === state.activeMonth)
+      .reduce((sum, txn) => sum + txn.amount, 0)
+
+  const monthlyBalances = () =>
+    props.envlp.allocated.map(
+      (x, i) =>
+        x +
+        props.envlp.transactions
+          .filter(
+            (txn) =>
+              dateToIndex(txn.date) == i &&
+              txn.envelopeName === props.envlp.name
+          )
+          .reduce((sum, txn) => sum + txn.amount, 0)
+    )
+
+  const netBalances = () =>
+    monthlyBalances().map((_, i) =>
+      monthlyBalances()
+        .slice(0, i + 1)
+        .reduce((a, b) => a + b, 0)
+    )
 
   return (
     <tr
       class={`${props.active && "bg-sky-200"} group rounded p-2`}
       onClick={(e) => {
-        e.preventDefault();
-        props.activate();
-        inputRef.focus();
-        inputRef.select();
+        e.preventDefault()
+        props.activate()
+        inputRef.focus()
+        inputRef.select()
       }}
     >
       <td>{props.name}</td>
@@ -38,52 +75,53 @@ export const BudgetRow = (props: BudgetRowProps) => {
               <div
                 class={`rounded outline-2 outline-blue-500 group-hover:outline`}
               >
-                {props.allocated.toLocaleString("en-us", {
-                  style: "currency",
-                  currency: "USD",
-                })}
+                {props.envlp.allocated[state.activeMonth].toLocaleString(
+                  "en-us",
+                  {
+                    style: "currency",
+                    currency: "USD",
+                  }
+                )}
               </div>
             </div>
           }
         >
           <div class="mr-2 py-1">
-            <form
+            <props.Form
               name="allocate"
-              onSubmit={(e) => {
-                e.preventDefault();
-                props.deactivate();
+              onSubmit={() => {
+                props.deactivate()
               }}
             >
               <input
                 type="text"
                 class=" w-full rounded"
-                name="allocated"
-                value={state.envelopes[props.name].allocated[state.activeMonth]}
-                onChange={(e) =>
-                  allocate(
-                    props.name,
-                    state.activeMonth,
-                    parseFloat(e.target.value)
-                  )
-                }
+                name="amount"
+                value={props.envlp.allocated[state.activeMonth]}
                 ref={inputRef!}
               />
-            </form>
+              <input type="hidden" name="envelopeName" value={props.name} />
+              <input
+                type="hidden"
+                name="monthIndex"
+                value={state.activeMonth}
+              />
+            </props.Form>
           </div>
         </Show>
       </td>
       <td>
-        {envelopeBalances()[props.name].toLocaleString("en-us", {
+        {activity().toLocaleString("en-us", {
           style: "currency",
           currency: "USD",
         })}
       </td>
       <td>
-        {netBalance()[props.name][state.activeMonth].toLocaleString("en-us", {
+        {netBalances()[state.activeMonth].toLocaleString("en-us", {
           style: "currency",
           currency: "USD",
         })}
       </td>
     </tr>
-  );
-};
+  )
+}

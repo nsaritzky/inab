@@ -26,6 +26,7 @@ model Envelope {
   name         String        @id
   transactions Transaction[]
   goals        Goal[]
+  allocated    Allocated[]
 }
 
 model Goal {
@@ -42,4 +43,18 @@ model Account {
   id           Int           @id @default(autoincrement())
   name         String
   transactions Transaction[]
+}
+
+model Allocated {
+  monthIndex   Int
+  amount       Float
+  Envelope     Envelope @relation(fields: [envelopeName], references: [name])
+  envelopeName String
+
+  @@unique([monthIndex, envelopeName])
+}
+
+model Unallocated {
+  id     Int   @id
+  amount Float
 }
