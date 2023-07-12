@@ -30,12 +30,11 @@ model Envelope {
 }
 
 model Goal {
-  id           Int      @id @default(autoincrement())
   type         String // "Monthly", "Yearly", or "Weekly". Should be an enum but SQLite
   amount       Float
   due          DateTime
   begin        DateTime
-  envelopeName String
+  envelopeName String   @unique
   envelope     Envelope @relation(fields: [envelopeName], references: [name])
 }
 
@@ -52,9 +51,4 @@ model Allocated {
   envelopeName String
 
   @@unique([monthIndex, envelopeName])
-}
-
-model Unallocated {
-  id     Int   @id
-  amount Float
 }

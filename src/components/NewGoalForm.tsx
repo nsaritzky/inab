@@ -5,8 +5,8 @@ import {
   required,
   setValue,
   setValues,
-} from "@modular-forms/solid";
-import type { Goal, GoalType } from "../types";
+} from "@modular-forms/solid"
+import type { GoalType } from "../types"
 import {
   nextDay,
   type Day,
@@ -18,8 +18,8 @@ import {
   getDay,
   getDate,
   getMonth,
-} from "date-fns";
-import { TextField } from "./TextField";
+} from "date-fns"
+import { TextField } from "./TextField"
 import {
   For,
   Match,
@@ -27,28 +27,32 @@ import {
   createEffect,
   createSignal,
   useContext,
-} from "solid-js";
-import { getOrdinal } from "../utilities";
-import { Select } from "./Select";
-import { CentralStoreContext } from "../root";
-import { RadioGroup } from "./RadioGroup";
+} from "solid-js"
+import { getOrdinal } from "../utilities"
+import { Select } from "./Select"
+import { CentralStoreContext } from "../root"
+import { RadioGroup } from "./RadioGroup"
+import { Envelope, Goal } from "@prisma/client"
+import { deleteGoalFn, updateGoalFn } from "~/db"
+import { createServerAction$ } from "solid-start/server"
 
 interface Props {
-  envelope: string;
-  cancelEditing: () => void;
+  envelope: Envelope & { goals: Goal[] }
+  activeGoal: Goal | undefined
+  cancelEditing: () => void
 }
 
-type Frequency = "Monthly" | "Yearly" | "Weekly";
+type Frequency = "Monthly" | "Yearly" | "Weekly"
 
 const frequencyOptions = ["Monthly", "Weekly", "Yearly"].map((s) => ({
   value: s,
   label: s,
-}));
+}))
 
 const daysOfMonth = [
   1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
   23, 24, 25, 26, 27, 28, 29, 30, 31,
-].map((n) => ({ label: `${n}${getOrdinal(n)}`, value: `${n}` }));
+].map((n) => ({ label: `${n}${getOrdinal(n)}`, value: `${n}` }))
 
 const daysOfTheWeek = [
   { label: "Sunday", value: "0" },
@@ -58,7 +62,7 @@ const daysOfTheWeek = [
   { label: "Thursday", value: "4" },
   { label: "Friday", value: "5" },
   { label: "Saturday", value: "6" },
-];
+]
 
 const months = [
   "January",
@@ -73,26 +77,26 @@ const months = [
   "October",
   "November",
   "December",
-];
+]
 
-const monthOptions = months.map((s) => ({ value: s, label: s }));
+const monthOptions = months.map((s) => ({ value: s, label: s }))
 
 /* type DayOfMonth = (typeof daysOfMonth)[number] */
 
 type NewGoalForm = {
-  amount: string;
-  frequency: Frequency;
+  amount: string
+  frequency: Frequency
   weekly: {
-    due: string;
-  };
+    due: string
+  }
   monthly: {
-    due: string;
-  };
+    due: string
+  }
   yearly: {
-    month: string;
-    day: string;
-  };
-};
+    month: string
+    day: string
+  }
+}
 
 const getInitialValues = (
   goal: Goal | undefined
@@ -100,7 +104,7 @@ const getInitialValues = (
   goal
     ? {
         amount: goal.amount.toString(),
-        frequency: goal.type,
+        frequency: goal.type as Frequency,
         weekly:
           goal.type === "Weekly"
             ? {
@@ -118,18 +122,17 @@ const getInitialValues = (
         yearly:
           goal.type === "Yearly"
             ? {
-                month: getMonth(goal.due).toString(),
+                month: months[getMonth(goal.due)],
                 day: getDate(goal.due).toString(),
               }
             : undefined,
       }
-    : undefined;
+    : undefined
 
 export const NewGoalForm = (props: Props) => {
-  const now = new Date();
-  const [state, { getGoalAsOf, setGoal, deleteGoal }] =
-    useContext(CentralStoreContext)!;
-  const existingGoal = () => getGoalAsOf()(props.envelope, now);
+  const now = new Date()
+  const [state] = useContext(CentralStoreContext)!
+  /* const existingGoal = () => getGoalAsOf()(props.envelope, now) */
 
   const formDefaults = {
     frequency: "Monthly" as const,
@@ -139,40 +142,52 @@ export const NewGoalForm = (props: Props) => {
       month: months[getMonth(now)],
       day: getDate(now).toString(),
     },
-  };
-  const initialValues = getInitialValues(existingGoal()) || formDefaults;
+  }
+  const initialValues = getInitialValues(props.activeGoal) || formDefaults
+  console.log(initialValues)
   const [goalForm, { Form, Field }] = createForm<NewGoalForm>({
     initialValues,
-  });
+  })
 
   const [goalFrequency, setGoalFrequency] = createSignal(
     initialValues.frequency
-  );
+  )
+
+  const [deletingGoal, deleteGoal] = createServerAction$(deleteGoalFn)
+
+  const [updatingGoal, updateGoal] = createServerAction$(updateGoalFn)
 
   const onSubmit: SubmitHandler<NewGoalForm> = (values, event) => {
-    let dueDate: Date;
+    let dueDate: Date
     switch (values.frequency) {
       case "Weekly":
-        dueDate = nextDay(endOfToday(), parseInt(values.weekly.due) as Day);
-        break;
+        dueDate = nextDay(endOfToday(), parseInt(values.weekly.due) as Day)
+        break
       case "Monthly":
-        dueDate = setDate(endOfToday(), parseInt(values.monthly.due));
-        break;
+        dueDate = setDate(endOfToday(), parseInt(values.monthly.due))
+        break
       case "Yearly":
         dueDate = setDate(
           setMonth(endOfToday(), months.indexOf(values.yearly.month)),
           parseInt(values.yearly.day)
-        );
-        break;
+        )
+        break
     }
-    setGoal(props.envelope, {
+    /* setGoal(props.envelope, {
+     *   type: values.frequency,
+     *   amount: parseFloat(values.amount),
+     *   begin: startOfToday(),
+     *   due: dueDate,
+     * }) */
+    updateGoal({
       type: values.frequency,
       amount: parseFloat(values.amount),
       begin: startOfToday(),
       due: dueDate,
-    });
-    props.cancelEditing();
-  };
+      envelopeName: props.envelope.name,
+    })
+    props.cancelEditing()
+  }
 
   return (
     <Form onSubmit={onSubmit}>
@@ -258,9 +273,8 @@ export const NewGoalForm = (props: Props) => {
       <div class="mt-2 flex justify-between">
         <button
           onClick={() => {
-            deleteGoal(props.envelope, existingGoal());
-            console.log(state.envelopes[props.envelope].goals);
-            props.cancelEditing();
+            deleteGoal(props.envelope.name)
+            props.cancelEditing()
           }}
           class="rounded bg-red-500 p-1 text-white"
         >
@@ -283,5 +297,5 @@ export const NewGoalForm = (props: Props) => {
         </div>
       </div>
     </Form>
-  );
-};
+  )
+}

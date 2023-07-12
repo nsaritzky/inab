@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma, Envelope } from "@prisma/client"
+import { PrismaClient, Prisma, Envelope, Goal } from "@prisma/client"
 import { createServerAction$, createServerData$ } from "solid-start/server"
 import type { Transaction } from "@prisma/client"
 import type { Optional } from "~/utilities"
@@ -83,14 +83,17 @@ export const deleteTransaction = async (txn: Transaction) => {
   await db.transaction.delete({ where: { id: txn.id } })
 }
 
-export const updateUnallocated = async (amt: number) => {
-  await db.unallocated.upsert({
-    where: { id: 0 },
-    create: {
-      amount: 0,
+export const updateGoalFn = async (goal: Goal) => {
+  await db.goal.upsert({
+    where: {
+      envelopeName: goal.envelopeName,
     },
-    update: {
-      amount: amt,
-    },
+    create: goal,
+    update: goal,
   })
+  console.log(goal)
+}
+
+export const deleteGoalFn = async (envelopeName: string) => {
+  await db.goal.delete({ where: { envelopeName } })
 }

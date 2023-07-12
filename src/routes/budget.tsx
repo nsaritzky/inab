@@ -16,11 +16,17 @@ import { useKeyDownEvent } from "@solid-primitives/keyboard"
 import { useRouteData, type RouteDataArgs } from "solid-start"
 import { createServerAction$, createServerData$ } from "solid-start/server"
 import { getEnvelopes, getTransactions, setAllocation } from "~/db"
-import { Envelope, EnvelopePayload, Prisma, Transaction } from "@prisma/client"
+import {
+  Allocated,
+  Envelope,
+  EnvelopePayload,
+  Prisma,
+  Transaction,
+} from "@prisma/client"
 import { coerceToDate, dateToIndex, parseDates } from "~/utilities"
 import { Suspense } from "solid-js"
 import { evolve } from "fp-ts/struct"
-import { parseISO } from "date-fns"
+import { isBefore, parseISO } from "date-fns"
 import { updateAt } from "~/utilities"
 
 const ZEROS: number[] = Array(50).fill(0)
@@ -52,8 +58,8 @@ export const routeData = (props: RouteDataArgs) => {
 }
 
 const Budget: Component<BudgetProps> = (props) => {
-  /* const [state, _] = useContext(CentralStoreContext)! */
-  const [activeEnvelope, setActiveEnvelope] = createSignal<string>()
+  const [state, _] = useContext(CentralStoreContext)!
+  const [activeEnvelopeName, setActiveEnvelopeName] = createSignal<string>()
   const [editingGoal, setEditingGoal] = createSignal(false)
   const data = useRouteData<typeof routeData>()
 
@@ -93,13 +99,46 @@ const Budget: Component<BudgetProps> = (props) => {
       ),
     }))
 
+  const activeEnvelope = () =>
+    envelopes()?.find((e) => e.name === activeEnvelopeName())
+
+  const activeGoal = () => activeEnvelope()?.goals[0]
+
+  const activity = (envelope: Envelope & { transactions: Transaction[] }) =>
+    envelope.transactions
+      .filter((txn) => dateToIndex(txn.date) === state.activeMonth)
+      .reduce((sum, txn) => sum + txn.amount, 0)
+
+  const monthlyBalances = (
+    envelope: Envelope & { transactions: Transaction[]; allocated: number[] }
+  ) =>
+    envelope.allocated.map(
+      (x, i) =>
+        x +
+        envelope.transactions
+          .filter(
+            (txn) =>
+              dateToIndex(txn.date) == i && txn.envelopeName === envelope.name
+          )
+          .reduce((sum, txn) => sum + txn.amount, 0)
+    )
+
+  const netBalances = (
+    envelope: Envelope & { transactions: Transaction[]; allocated: number[] }
+  ) =>
+    monthlyBalances(envelope).map((_, i) =>
+      monthlyBalances(envelope)
+        .slice(0, i + 1)
+        .reduce((a, b) => a + b, 0)
+    )
+
   const keyDownEvent = useKeyDownEvent()
 
   createEffect(() => {
     const e = keyDownEvent()
-    if (e && activeEnvelope()) {
+    if (e && activeEnvelopeName()) {
       if (e.key === "Escape") {
-        setActiveEnvelope()
+        setActiveEnvelopeName()
       }
     }
   })
@@ -133,13 +172,13 @@ const Budget: Component<BudgetProps> = (props) => {
                         name={envlp.name}
                         envelope={envlp}
                         Form={allocate.Form}
-                        active={activeEnvelope() == envlp.name}
+                        active={activeEnvelopeName() == envlp.name}
                         activate={() => {
-                          setActiveEnvelope(envlp.name)
+                          setActiveEnvelopeName(envlp.name)
                           setEditingGoal(false)
                         }}
-                        deactivate={() => setActiveEnvelope()}
-                        setActiveEnvelope={setActiveEnvelope}
+                        deactivate={() => setActiveEnvelopeName()}
+                        setActiveEnvelope={setActiveEnvelopeName}
                       />
                     )}
                   </For>
@@ -148,12 +187,27 @@ const Budget: Component<BudgetProps> = (props) => {
             </Suspense>
           </div>
           <div class="w-1/3 border">
-            <Show when={activeEnvelope()}>
-              {/* <BudgetInspector
-                activeEnvelope={activeEnvelope()!}
-                editingGoal={editingGoal()}
-                setEditingGoal={setEditingGoal}
-              /> */}
+            <Show when={activeEnvelopeName()}>
+              <Suspense>
+                <BudgetInspector
+                  activeGoal={activeGoal()}
+                  netBalance={
+                    netBalances(activeEnvelope()!).at(state.activeMonth)!
+                  }
+                  leftoverBalance={
+                    netBalances(activeEnvelope()!).at(state.activeMonth - 1)!
+                  }
+                  allocatedThisMonth={
+                    activeEnvelope()?.allocated[state.activeMonth]!
+                  }
+                  activityThisMonth={activity(activeEnvelope()!)}
+                  activeEnvelope={
+                    envelopes()?.find((e) => e.name === activeEnvelopeName())! // TODO better error handling for this
+                  }
+                  editingGoal={editingGoal()}
+                  setEditingGoal={setEditingGoal}
+                />
+              </Suspense>
             </Show>
           </div>
         </div>
