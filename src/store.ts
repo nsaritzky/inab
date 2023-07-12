@@ -1,4 +1,4 @@
-import { createStore } from "solid-js/store";
+import { createStore } from "solid-js/store"
 import type {
   Store,
   Transaction,
@@ -7,11 +7,11 @@ import type {
   Panel,
   Goal,
   GoalStatus,
-} from "./types";
-import { v4 as uuid } from "uuid";
-import { createEffect, createMemo } from "solid-js";
-import { dateParser, dateToIndex } from "./utilities";
-import { makePersisted } from "@solid-primitives/storage";
+} from "./types"
+import { v4 as uuid } from "uuid"
+import { createEffect, createMemo } from "solid-js"
+import { dateParser, dateToIndex } from "./utilities"
+import { makePersisted } from "@solid-primitives/storage"
 import {
   closestIndexTo,
   closestTo,
@@ -24,15 +24,15 @@ import {
   nextDay,
   setDate,
   setDayOfYear,
-} from "date-fns";
+} from "date-fns"
 
-export const DAY_ONE = new Date("2023-01-01T00:00:01");
-const ZEROS: number[] = Array(50).fill(0);
-const TODAY = new Date();
+export const DAY_ONE = new Date("2023-01-01T00:00:01")
+const ZEROS: number[] = Array(50).fill(0)
+const TODAY = new Date()
 const currentMonth =
   12 * (TODAY.getFullYear() - DAY_ONE.getFullYear()) +
   TODAY.getMonth() -
-  DAY_ONE.getMonth();
+  DAY_ONE.getMonth()
 
 const sampleTxns: Transaction[] = [
   {
@@ -53,7 +53,7 @@ const sampleTxns: Transaction[] = [
     account: "Checking",
     date: new Date(),
   },
-];
+]
 export const initialState: Store = {
   transactions: [],
   accounts: [],
@@ -78,14 +78,14 @@ export const initialState: Store = {
     },
   },
   // panel: "transactions",
-};
-
-const [state, setState] = createStore(initialState);
-if (state.activeMonth > ZEROS.length) {
-  setState("activeMonth", 0);
 }
 
-export const createCentralStore = () => {
+const [state, setState] = createStore(initialState)
+if (state.activeMonth > ZEROS.length) {
+  setState("activeMonth", 0)
+}
+
+export const useCentralStore = () => {
   const addTransaction = (
     idFn: () => string,
     {
@@ -98,18 +98,18 @@ export const createCentralStore = () => {
       description,
     }: Omit<Transaction, "id" | "amount"> & { inflow: number; outflow: number }
   ) => {
-    const amount = inflow - outflow;
+    const amount = inflow - outflow
     if (amount > 0) {
-      setState("unallocated", (old) => old + amount);
+      setState("unallocated", (old) => old + amount)
     }
     setState("transactions", (txns) => [
       ...txns,
       { id: idFn(), amount, date, payee, envelope, account, description },
-    ]);
+    ])
     if (!Object.keys(state.envelopes).includes(envelope)) {
-      setState("envelopes", envelope, { allocated: ZEROS, goals: [] });
+      setState("envelopes", envelope, { allocated: ZEROS, goals: [] })
     }
-  };
+  }
 
   const editTransaction = (
     id: string | (() => string),
@@ -123,12 +123,12 @@ export const createCentralStore = () => {
       description,
     }: Omit<Transaction, "id" | "amount"> & { inflow: number; outflow: number }
   ) => {
-    const newAmount = inflow - outflow;
+    const newAmount = inflow - outflow
     if (typeof id == "string") {
-      const txn = state.transactions.filter((t) => t.id == id)[0];
-      const oldAmount = txn.amount;
+      const txn = state.transactions.filter((t) => t.id == id)[0]
+      const oldAmount = txn.amount
       if (newAmount > oldAmount) {
-        setState("unallocated", (old) => old - oldAmount + newAmount);
+        setState("unallocated", (old) => old - oldAmount + newAmount)
       }
       setState(
         "transactions",
@@ -141,10 +141,10 @@ export const createCentralStore = () => {
           account,
           description,
         })
-      );
+      )
     } else {
       if (newAmount > 0) {
-        setState("unallocated", (old) => old + newAmount);
+        setState("unallocated", (old) => old + newAmount)
       }
       setState("transactions", (txns) => [
         ...txns,
@@ -157,35 +157,35 @@ export const createCentralStore = () => {
           account,
           description,
         },
-      ]);
+      ])
     }
     if (!Object.keys(state.envelopes).includes(envelope)) {
-      setState("envelopes", envelope, { allocated: ZEROS, goals: [] });
+      setState("envelopes", envelope, { allocated: ZEROS, goals: [] })
     }
-  };
+  }
 
   const deleteTransaction = (id: string) =>
-    setState("transactions", (txns) => txns.filter((t) => t.id != id));
+    setState("transactions", (txns) => txns.filter((t) => t.id != id))
 
   const allocate = (envelope: string, month: number, value: number) => {
-    const oldValue: number = state.envelopes[envelope].allocated[month] || 0;
-    setState("envelopes", envelope, "allocated", month, value);
-    setState("unallocated", (old) => old - value + oldValue);
-  };
+    const oldValue: number = state.envelopes[envelope].allocated[month] || 0
+    setState("envelopes", envelope, "allocated", month, value)
+    setState("unallocated", (old) => old - value + oldValue)
+  }
 
   const envelopeBalances = createMemo(() => {
-    const result: Record<string, number> = {};
+    const result: Record<string, number> = {}
     for (const nm of Object.keys(state.envelopes)) {
       const activity = state.transactions
         .filter(
           (txn) =>
             txn.envelope == nm && dateToIndex(txn.date) == state.activeMonth
         )
-        .reduce((sum, txn) => sum + txn.amount, 0);
-      Object.assign(result, { [nm]: activity });
+        .reduce((sum, txn) => sum + txn.amount, 0)
+      Object.assign(result, { [nm]: activity })
     }
-    return result;
-  });
+    return result
+  })
 
   const monthlyBalances = createMemo(() =>
     Object.fromEntries(
@@ -200,7 +200,7 @@ export const createCentralStore = () => {
         ),
       ])
     )
-  );
+  )
 
   const netBalance = createMemo(() =>
     Object.fromEntries(
@@ -211,60 +211,60 @@ export const createCentralStore = () => {
         ),
       ])
     )
-  );
+  )
 
   const accountBalances = createMemo(() => {
-    const result: Record<string, number> = {};
+    const result: Record<string, number> = {}
     for (const nm of state.accounts) {
       const spent = state.transactions
         .filter((txn) => txn.account == nm)
-        .reduce((sum, txn) => sum + txn.amount, 0);
-      Object.assign(result, { [nm]: spent });
+        .reduce((sum, txn) => sum + txn.amount, 0)
+      Object.assign(result, { [nm]: spent })
     }
-    return result;
-  });
+    return result
+  })
 
   const setGoal = (envelope: string, goal: Goal): void => {
     setState("envelopes", envelope, "goals", (goals) => [
       ...goals.filter((g) => !isSameMonth(g.begin, goal.begin)),
       goal,
-    ]);
-  };
+    ])
+  }
 
   const deleteGoal = (envelope: string, goal: Goal | undefined): void => {
     setState("envelopes", envelope, "goals", (goals) =>
       goals.filter((g) => g.due != goal?.due)
-    );
-  };
+    )
+  }
 
   const getGoalAsOf = createMemo(
     () =>
       (envelope: string, date: Date): Goal | undefined => {
         const earlierGoals = state.envelopes[envelope].goals.filter((g) =>
           isBefore(g.begin, date)
-        );
+        )
         const i = closestIndexTo(
           date,
           earlierGoals.map((g) => g.begin)
-        );
-        return i != undefined ? earlierGoals[i] : undefined;
+        )
+        return i != undefined ? earlierGoals[i] : undefined
       }
-  );
+  )
 
   const updateGoalDueDate = (envelope: string, date: Date) => {
-    const g = getGoalAsOf()(envelope, date);
+    const g = getGoalAsOf()(envelope, date)
     if (g) {
-      let newDueDate: Date;
+      let newDueDate: Date
       switch (g.type) {
         case "Weekly": {
-          newDueDate = nextDay(date, getDay(g.due));
+          newDueDate = nextDay(date, getDay(g.due))
         }
         case "Monthly": {
-          newDueDate = setDate(date, g.due.getDate());
+          newDueDate = setDate(date, g.due.getDate())
         }
         case "Yearly":
           {
-            newDueDate = setDayOfYear(date, getDayOfYear(g.due));
+            newDueDate = setDayOfYear(date, getDayOfYear(g.due))
           }
           setState(
             "envelopes",
@@ -272,47 +272,47 @@ export const createCentralStore = () => {
             "goals",
             (goal) => goal == getGoalAsOf()(envelope, date),
             (goal) => ({ ...goal, due: newDueDate })
-          );
+          )
       }
     }
-  };
+  }
 
   const getGoalStatus = (
     envelope: string,
     date: Date
   ): GoalStatus | undefined => {
-    const g = getGoalAsOf()(envelope, date);
+    const g = getGoalAsOf()(envelope, date)
     if (g) {
-      let dueDate: Date;
+      let dueDate: Date
       switch (g.type) {
         case "Weekly": {
-          dueDate = nextDay(date, getDay(g.due));
+          dueDate = nextDay(date, getDay(g.due))
         }
         case "Monthly": {
-          dueDate = setDate(date, g.due.getDate());
+          dueDate = setDate(date, g.due.getDate())
         }
         case "Yearly": {
-          dueDate = setDayOfYear(date, getDayOfYear(g.due));
+          dueDate = setDayOfYear(date, getDayOfYear(g.due))
         }
       }
       if (
         state.envelopes[envelope].allocated[dateToIndex(endOfToday())] >=
         g.amount
       ) {
-        return "green";
+        return "green"
       } else {
         if (isBefore(dueDate, endOfToday())) {
-          return "yellow";
+          return "yellow"
         } else {
-          return "red";
+          return "red"
         }
       }
     }
-  };
+  }
 
-  const setIncMonth = () => setState("activeMonth", (n) => n + 1);
-  const setDecMonth = () => setState("activeMonth", (n) => n - 1);
-  const setMonth = (i: number) => setState("activeMonth", i);
+  const setIncMonth = () => setState("activeMonth", (n) => n + 1)
+  const setDecMonth = () => setState("activeMonth", (n) => n - 1)
+  const setMonth = (i: number) => setState("activeMonth", i)
 
   // const setPanel = (panel: Panel) => setState("panel", panel);
 
@@ -337,5 +337,5 @@ export const createCentralStore = () => {
       // setPanel,
       dateToIndex,
     },
-  ] as const;
-};
+  ] as const
+}
