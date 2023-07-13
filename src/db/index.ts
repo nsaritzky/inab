@@ -66,13 +66,15 @@ export const setAllocation = async (
   })
 }
 
-export const saveTransactionFn = async (txn: Optional<Transaction, "id">) => {
+export const saveTransactionFn = async (
+  txn: Prisma.TransactionCreateInput & { id?: number }
+) => {
   if (txn.id) {
     await db.transaction.update({
       where: { id: txn.id },
       data: { ...txn, id: undefined },
     })
-  } else await db.transaction.create({ data: txn })
+  } else await db.transaction.create({ data: { ...txn, id: undefined } })
 }
 
 export const updateTransactionFn = async (txn: Transaction) => {
