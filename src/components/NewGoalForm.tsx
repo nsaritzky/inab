@@ -40,6 +40,7 @@ interface Props {
   envelope: Envelope & { goals: Goal[] }
   activeGoal: Goal | undefined
   cancelEditing: () => void
+  userID: string
 }
 
 type Frequency = "Monthly" | "Yearly" | "Weekly"
@@ -182,9 +183,10 @@ export const NewGoalForm = (props: Props) => {
     updateGoal({
       type: values.frequency,
       amount: parseFloat(values.amount),
-      begin: startOfToday(),
+      begin: state.activeMonth,
       due: dueDate,
       envelopeName: props.envelope.name,
+      userID: props.userID,
     })
     props.cancelEditing()
   }

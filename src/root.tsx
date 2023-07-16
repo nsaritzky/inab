@@ -16,6 +16,7 @@ import {
 import { Sidebar } from "./components/sidebar"
 import "./root.css"
 import { useCentralStore } from "./store"
+import { SessionProvider } from "@solid-auth/base/client"
 
 export const CentralStoreContext =
   createContext<ReturnType<typeof useCentralStore>>()
@@ -35,13 +36,17 @@ export default function Root() {
         <Meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <Body>
-        <Sidebar />
-        <CentralStoreContext.Provider value={ctx}>
-          <Routes>
-            <FileRoutes />
-          </Routes>
-        </CentralStoreContext.Provider>
-        <Scripts />
+        <Suspense>
+          <SessionProvider>
+            <Sidebar />
+            <CentralStoreContext.Provider value={ctx}>
+              <Routes>
+                <FileRoutes />
+              </Routes>
+            </CentralStoreContext.Provider>
+            <Scripts />
+          </SessionProvider>
+        </Suspense>
       </Body>
     </Html>
   )

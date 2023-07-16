@@ -23,6 +23,7 @@ interface BudgetRowProps {
   activate: () => void
   deactivate: () => void
   setActiveEnvelope: Setter<string>
+  userID: string
 }
 
 export const BudgetRow = (props: BudgetRowProps) => {
@@ -89,7 +90,8 @@ export const BudgetRow = (props: BudgetRowProps) => {
           <div class="mr-2 py-1">
             <props.Form
               name="allocate"
-              onSubmit={() => {
+              onSubmit={(e) => {
+                console.log(e.target)
                 props.deactivate()
               }}
             >
@@ -106,6 +108,7 @@ export const BudgetRow = (props: BudgetRowProps) => {
                 name="monthIndex"
                 value={state.activeMonth}
               />
+              <input type="hidden" name="userID" value={props.userID} />
             </props.Form>
           </div>
         </Show>

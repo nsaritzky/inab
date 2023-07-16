@@ -1,31 +1,28 @@
-import { A } from "solid-start";
-import Counter from "~/components/Counter";
+import { getSession } from "@solid-auth/base"
+import { signIn } from "@solid-auth/base/client"
+import { Show } from "solid-js"
+import { A, Navigate, useRouteData } from "solid-start"
+import { createServerData$ } from "solid-start/server"
+import { authOpts } from "./api/auth/[...solidauth]"
+
+export const routeData = () =>
+  createServerData$(
+    async (_, event) => {
+      return await getSession(event.request, authOpts)
+    },
+    { key: () => "authUser" }
+  )
 
 export default function Home() {
+  const session = useRouteData<typeof routeData>()
   return (
-    <main class="text-center mx-auto text-gray-700 p-4">
-      <h1 class="max-6-xs text-6xl text-sky-700 font-thin uppercase my-16">
-        Hello world!
-      </h1>
-      <Counter />
-      <p class="mt-8">
-        Visit{" "}
-        <a
-          href="https://solidjs.com"
-          target="_blank"
-          class="text-sky-600 hover:underline"
-        >
-          solidjs.com
-        </a>{" "}
-        to learn how to build Solid apps.
-      </p>
-      <p class="my-4">
-        <span>Home</span>
-        {" - "}
-        <A href="/about" class="text-sky-600 hover:underline">
-          About Page
-        </A>{" "}
-      </p>
+    <main class="mx-auto p-4 text-center text-gray-700">
+      <Show
+        when={session()?.user}
+        fallback={<button onClick={() => signIn("google")}>Sign in</button>}
+      >
+        <Navigate href="/budget" />
+      </Show>
     </main>
-  );
+  )
 }

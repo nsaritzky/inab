@@ -1,4 +1,11 @@
-import { Component, Setter, Show, createSignal, useContext } from "solid-js"
+import {
+  Component,
+  Setter,
+  Show,
+  createSignal,
+  useContext,
+  createEffect,
+} from "solid-js"
 import { CentralStoreContext } from "../root"
 import {
   SubmitHandler,
@@ -10,15 +17,17 @@ import {
   setValue,
 } from "@modular-forms/solid"
 import { TextField } from "./TextField"
-import { Transaction } from "@prisma/client"
+import { Prisma, Transaction } from "@prisma/client"
 import { saveTransactionFn } from "~/db"
 import { Combobox } from "~/components/Combobox"
 import { createServerAction$ } from "solid-start/server"
+import { useSession } from "~/utilities"
 
 interface AddTransactionFormProps {
   setEditingNewTransaction?: Setter<boolean>
   deactivate: () => void
   txn?: Transaction | undefined
+  userID?: string
 }
 
 interface AddTransactionElement extends HTMLCollection {
@@ -76,6 +85,9 @@ export const TransactionForm: Component<AddTransactionFormProps> = (props) => {
       )
       return
     }
+    createEffect(() => {
+      console.log(props.userID)
+    })
     props.deactivate()
     /* editTransaction(props.txn?.id || uuid, {
      *   inflow: parseFloat(values.inflow) || 0,
@@ -95,10 +107,16 @@ export const TransactionForm: Component<AddTransactionFormProps> = (props) => {
             amount,
             date: new Date(`${values.date} 00:00:01`),
             payee: values.payee,
+            user: { connect: { id: props.userID } },
             envelope: {
               connectOrCreate: {
-                where: { name: values.envelope },
-                create: { name: values.envelope },
+                where: {
+                  name_userID: { name: values.envelope, userID: props.userID! },
+                },
+                create: {
+                  name: values.envelope,
+                  userID: props.userID!,
+                },
               },
             },
             description: values.description,
@@ -109,6 +127,7 @@ export const TransactionForm: Component<AddTransactionFormProps> = (props) => {
             date: new Date(`${values.date} 00:00:01`),
             payee: values.payee,
             description: values.description,
+            userID: props.userID,
           }
     )
     reset(newTransactionForm)
@@ -205,7 +224,9 @@ export const TransactionForm: Component<AddTransactionFormProps> = (props) => {
               error={field.error}
               disabled={getValue(newTransactionForm, "inflow") != ""}
               value={field.value}
-              onChange={(e) => setValue(newTransactionForm, "envelope", e)}
+              onChange={(e) =>
+                setValue(newTransactionForm, "envelope", e.currentTarget.value)
+              }
             />
           )}
         </Field>

@@ -15,7 +15,12 @@ import { BudgetInspector } from "~/components/BudgetInspector"
 import { useKeyDownEvent } from "@solid-primitives/keyboard"
 import { useRouteData, type RouteDataArgs } from "solid-start"
 import { createServerAction$, createServerData$ } from "solid-start/server"
-import { getEnvelopes, getTransactions, setAllocation } from "~/db"
+import {
+  getEnvelopes,
+  getTransactions,
+  getUserFromEmail,
+  setAllocation,
+} from "~/db"
 import {
   Allocated,
   Envelope,
@@ -23,7 +28,7 @@ import {
   Prisma,
   Transaction,
 } from "@prisma/client"
-import { coerceToDate, dateToIndex, parseDates } from "~/utilities"
+import { coerceToDate, dateToIndex, parseDates, useSession } from "~/utilities"
 import { Suspense } from "solid-js"
 import { evolve } from "fp-ts/struct"
 import { isBefore, parseISO } from "date-fns"
@@ -34,26 +39,42 @@ const ZEROS: number[] = Array(50).fill(0)
 interface BudgetProps {}
 
 export const routeData = (props: RouteDataArgs) => {
-  const envelopes = createServerData$(getEnvelopes)
-  const transactions = createServerData$(getTransactions)
+  const session = useSession()
+  const user = () => session()?.user
+  const dbUser = createServerData$(getUserFromEmail, {
+    key: () => user()?.email,
+  })
+  const data = createServerData$(
+    async (userID: string) => ({
+      transactions: await getTransactions(userID),
+      envelopes: await getEnvelopes(userID),
+    }),
+    {
+      key: () => dbUser()?.id,
+    }
+  )
   return () => ({
-    envelopes: envelopes()?.map((e) => ({
-      ...e,
-      goals: e.goals.map((g) => ({
-        ...g,
-        begin: coerceToDate(g.begin),
-        due: coerceToDate(g.due),
-      })),
-      allocated: e.allocated.reduce(
-        (arr, allocated) =>
-          updateAt(allocated.monthIndex, allocated.amount)(arr),
-        ZEROS
-      ),
-    })),
-    transactions: transactions()?.map((txn) => ({
-      ...txn,
-      date: coerceToDate(txn.date),
-    })),
+    envelopes: data()?.envelopes?.map((e) => {
+      return {
+        ...e,
+        goals: e.goals.map((g) => ({
+          ...g,
+          due: coerceToDate(g.due),
+        })),
+        allocated: e.allocated.reduce(
+          (arr, allocated) =>
+            updateAt(allocated.monthIndex, allocated.amount)(arr),
+          ZEROS
+        ),
+      }
+    }),
+    transactions: data()?.transactions?.map((txn) => {
+      return {
+        ...txn,
+        date: coerceToDate(txn.date),
+      }
+    }),
+    user: dbUser(),
   })
 }
 
@@ -66,6 +87,7 @@ const Budget: Component<BudgetProps> = (props) => {
   const [allocating, allocate] = createServerAction$(
     async (form: FormData, { request }) => {
       await setAllocation(
+        form.get("userID") as string,
         form.get("envelopeName") as string,
         parseInt(form.get("monthIndex") as string),
         parseFloat(form.get("amount") as string)
@@ -143,6 +165,10 @@ const Budget: Component<BudgetProps> = (props) => {
     }
   })
 
+  createEffect(() => {
+    console.log(data())
+  })
+
   return (
     <div class="ml-64">
       <div class="ml-4 mt-4 h-screen">
@@ -179,6 +205,7 @@ const Budget: Component<BudgetProps> = (props) => {
                         }}
                         deactivate={() => setActiveEnvelopeName()}
                         setActiveEnvelope={setActiveEnvelopeName}
+                        userID={data()?.user?.id}
                       />
                     )}
                   </For>
@@ -206,6 +233,7 @@ const Budget: Component<BudgetProps> = (props) => {
                   }
                   editingGoal={editingGoal()}
                   setEditingGoal={setEditingGoal}
+                  userID={data()?.user?.id!}
                 />
               </Suspense>
             </Show>

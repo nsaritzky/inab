@@ -6,16 +6,31 @@ import { endOfMonth } from "date-fns"
 
 const db = new PrismaClient()
 
-export const getTransactions = async () => await db.transaction.findMany()
+export const getUserFromEmail = async (email: string) =>
+  await db.user.findUnique({ where: { email } })
 
-export const getEnvelopes = async () => {
+export const getTransactions = async (userID: string) =>
+  await db.transaction.findMany({
+    where: {
+      userID,
+    },
+  })
+
+export const getEnvelopes = async (userID: string) => {
   const es = await db.envelope.findMany({
     include: { goals: true, allocated: true },
+    where: {
+      userID,
+    },
   })
   return es
 }
 
-export const envelopeSums = async (month: number, year: number) => {
+export const envelopeSums = async (
+  userEmail: string,
+  month: number,
+  year: number
+) => {
   const startOfMonth = new Date(`${year}-${month}-01`)
   await db.transaction.groupBy({
     by: ["envelopeName"],
@@ -34,30 +49,51 @@ export const envelopeSums = async (month: number, year: number) => {
             lte: endOfMonth(startOfMonth),
           },
         },
+        {
+          user: {
+            is: {
+              email: userEmail,
+            },
+          },
+        },
       ],
     },
   })
 }
 
-export const getGoals = () =>
+export const getGoals = (userEmail: string) =>
   createServerData$(async () => {
-    return await db.goal.findMany()
+    return await db.goal.findMany({
+      where: {
+        user: {
+          is: {
+            email: userEmail,
+          },
+        },
+      },
+    })
   })
 
 export const setAllocation = async (
+  userID: string,
   envelopeName: string,
   monthIndex: number,
   amount: number
 ) => {
   await db.allocated.upsert({
     where: {
-      monthIndex_envelopeName: { monthIndex, envelopeName },
+      monthIndex_envelopeName_userID: { monthIndex, envelopeName, userID },
     },
     create: {
       monthIndex,
       amount,
       Envelope: {
-        connect: { name: envelopeName },
+        connect: { name_userID: { name: envelopeName, userID } },
+      },
+      user: {
+        connect: {
+          id: userID,
+        },
       },
     },
     update: {
@@ -74,7 +110,11 @@ export const saveTransactionFn = async (
       where: { id: txn.id },
       data: { ...txn, id: undefined },
     })
-  } else await db.transaction.create({ data: { ...txn, id: undefined } })
+  } else
+    await db.transaction.create({
+      data: { ...txn, id: undefined },
+      include: { envelope: true },
+    })
 }
 
 export const updateTransactionFn = async (txn: Transaction) => {
@@ -82,13 +122,18 @@ export const updateTransactionFn = async (txn: Transaction) => {
 }
 
 export const deleteTransaction = async (txn: Transaction) => {
+  console.log("deleting")
   await db.transaction.delete({ where: { id: txn.id } })
 }
 
 export const updateGoalFn = async (goal: Goal) => {
+  console.log("updating goal")
   await db.goal.upsert({
     where: {
-      envelopeName: goal.envelopeName,
+      envelopeName_userID: {
+        envelopeName: goal.envelopeName,
+        userID: goal.userID,
+      },
     },
     create: goal,
     update: goal,
@@ -96,6 +141,8 @@ export const updateGoalFn = async (goal: Goal) => {
   console.log(goal)
 }
 
-export const deleteGoalFn = async (envelopeName: string) => {
-  await db.goal.delete({ where: { envelopeName } })
+export const deleteGoalFn = async (envelopeName: string, userID: string) => {
+  await db.goal.delete({
+    where: { envelopeName_userID: { envelopeName, userID } },
+  })
 }

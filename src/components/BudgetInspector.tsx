@@ -26,6 +26,7 @@ interface BudgetInspectorProps {
   activityThisMonth: number
   editingGoal: boolean
   setEditingGoal: Setter<boolean>
+  userID: string
 }
 
 export const BudgetInspector = (props: BudgetInspectorProps) => {
@@ -59,6 +60,7 @@ export const BudgetInspector = (props: BudgetInspectorProps) => {
                   envelope={props.activeEnvelope}
                   activeGoal={props.activeGoal}
                   cancelEditing={() => props.setEditingGoal(false)}
+                  userID={props.userID}
                 />
               </Show>
             }
