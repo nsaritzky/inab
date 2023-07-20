@@ -165,10 +165,6 @@ const Budget: Component<BudgetProps> = (props) => {
     }
   })
 
-  createEffect(() => {
-    console.log(data())
-  })
-
   return (
     <div class="ml-64">
       <div class="ml-4 mt-4 h-screen">

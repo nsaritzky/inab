@@ -87,7 +87,7 @@ model Session {
 model User {
   id            String        @id @default(cuid())
   name          String?
-  email         String       @unique
+  email         String        @unique
   emailVerified DateTime?
   image         String?
   accounts      Account[]
@@ -96,6 +96,7 @@ model User {
   envelopes     Envelope[]
   goals         Goal[]
   allocated     Allocated[]
+  plaidItems     PlaidItem[]
 }
 
 model VerificationToken {
@@ -104,4 +105,11 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model PlaidItem {
+  id           String @id
+  accessToken String
+  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
 }

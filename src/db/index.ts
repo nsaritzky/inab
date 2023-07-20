@@ -7,7 +7,12 @@ import { endOfMonth } from "date-fns"
 const db = new PrismaClient()
 
 export const getUserFromEmail = async (email: string) =>
-  await db.user.findUnique({ where: { email } })
+  await db.user.findUnique({
+    where: { email },
+    include: {
+      plaidItems: true,
+    },
+  })
 
 export const getTransactions = async (userID: string) =>
   await db.transaction.findMany({
@@ -146,3 +151,27 @@ export const deleteGoalFn = async (envelopeName: string, userID: string) => {
     where: { envelopeName_userID: { envelopeName, userID } },
   })
 }
+
+export const savePlaidItemFn = async (
+  accessToken: string,
+  itemId: string,
+  userId: string
+) => {
+  await db.plaidItem.create({
+    data: {
+      id: itemId,
+      accessToken,
+      userId,
+    },
+  })
+}
+
+// export const getPlaidItems = async (userId: string) =>
+//   await db.user.findUnique({
+//     where: {
+//       id: userId,
+//     },
+//     include: {
+//       plaidItems: true,
+//     },
+//   })
