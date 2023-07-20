@@ -33,26 +33,27 @@ import { Suspense } from "solid-js"
 import { evolve } from "fp-ts/struct"
 import { isBefore, parseISO } from "date-fns"
 import { updateAt } from "~/utilities"
+import { getSession } from "@solid-auth/base"
+import { authOpts } from "./api/auth/[...solidauth]"
 
 const ZEROS: number[] = Array(50).fill(0)
 
 interface BudgetProps {}
 
 export const routeData = (props: RouteDataArgs) => {
-  const session = useSession()
-  const user = () => session()?.user
-  const dbUser = createServerData$(getUserFromEmail, {
-    key: () => user()?.email,
-  })
-  const data = createServerData$(
-    async (userID: string) => ({
-      transactions: await getTransactions(userID),
-      envelopes: await getEnvelopes(userID),
-    }),
-    {
-      key: () => dbUser()?.id,
+  const data = createServerData$(async (_, event) => {
+    const session = await getSession(event.request, authOpts)
+    const user = session?.user
+    if (!session || !session.user) {
+      throw redirect("/")
     }
-  )
+    const dbUser = await getUserFromEmail(user?.email!)
+    return {
+      transactions: await getTransactions(dbUser?.id!),
+      envelopes: await getEnvelopes(dbUser?.id!),
+      user: dbUser,
+    }
+  })
   return () => ({
     envelopes: data()?.envelopes?.map((e) => {
       return {
@@ -74,7 +75,7 @@ export const routeData = (props: RouteDataArgs) => {
         date: coerceToDate(txn.date),
       }
     }),
-    user: dbUser(),
+    user: data()?.user,
   })
 }
 

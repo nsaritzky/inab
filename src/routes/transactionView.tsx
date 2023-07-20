@@ -16,21 +16,28 @@ import { type RouteDataArgs, useRouteData } from "solid-start"
 import { compareAsc, compareDesc } from "date-fns"
 import { createServerData$ } from "solid-start/server"
 import { Transaction } from "@prisma/client"
-import { coerceToDate, useSession } from "~/utilities"
+import { coerceToDate } from "~/utilities"
+import { authOpts } from "./api/auth/[...solidauth]"
+import { getSession } from "@solid-auth/base"
+import { plaidClient } from "~/server/plaidApi"
 
 export const routeData = (props: RouteDataArgs) => {
-  const session = useSession()
-  const user = () => session()?.user
-  const dbUser = createServerData$(getUserFromEmail, {
-    key: () => user()?.email,
-  })
-  const records = createServerData$(getTransactions, {
-    key: () => dbUser()?.id,
-    initialValue: [],
+  const data = createServerData$(async (_, event) => {
+    const session = await getSession(event.request, authOpts)
+    const user = session?.user
+    if (!session || !user) {
+      throw redirect("/")
+    }
+    const dbUser = await getUserFromEmail(user?.email!)
+    const transactions = await getTransactions(dbUser?.id!)
+    return { transactions, user: dbUser }
   })
   return () => ({
-    transactions: records()?.map((t) => ({ ...t, date: coerceToDate(t.date) })),
-    user: dbUser(),
+    transactions: data()?.transactions.map((t) => ({
+      ...t,
+      date: coerceToDate(t.date),
+    })),
+    user: data()?.user,
   })
 }
 
@@ -75,9 +82,9 @@ const TransactionView = () => {
             />
           </Show>
 
-          <Suspense>
+          <Show when={data().transactions}>
             <For
-              each={sort(data().transactions, (a, b) =>
+              each={sort(data().transactions!, (a, b) =>
                 compareDesc(a.date, b.date)
               )()}
             >
@@ -85,7 +92,7 @@ const TransactionView = () => {
                 console.log(txn)
                 return (
                   <TransactionRow
-                    userID={data().user?.id}
+                    userID={data().user?.id!}
                     txn={txn}
                     active={activeIndex() == i()}
                     activate={() => setActiveIndex(i())}
@@ -94,7 +101,7 @@ const TransactionView = () => {
                 )
               }}
             </For>
-          </Suspense>
+          </Show>
         </div>
       </div>
     </div>
