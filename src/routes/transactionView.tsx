@@ -5,48 +5,73 @@ import {
   createSignal,
   useContext,
   Suspense,
+  onMount,
+  createMemo,
 } from "solid-js"
 import { TransactionForm } from "~/components/transactionForm"
 import { TransactionRow } from "~/components//transactionRow"
 import { AiOutlinePlusCircle } from "solid-icons/ai"
 import { CentralStoreContext } from "../root"
 import { sort } from "@solid-primitives/signal-builders"
-import { getTransactions, getUserFromEmail } from "~/db"
-import { type RouteDataArgs, useRouteData } from "solid-start"
+import {
+  addTransactions,
+  getTransactions,
+  getUserFromEmail,
+  updateCursor,
+} from "~/db"
+import { type RouteDataArgs, useRouteData, refetchRouteData } from "solid-start"
 import { compareAsc, compareDesc } from "date-fns"
-import { createServerData$ } from "solid-start/server"
+import {
+  createServerAction$,
+  createServerData$,
+  redirect,
+} from "solid-start/server"
 import { Transaction } from "@prisma/client"
 import { coerceToDate } from "~/utilities"
 import { authOpts } from "./api/auth/[...solidauth]"
 import { getSession } from "@solid-auth/base"
 import { plaidClient } from "~/server/plaidApi"
+import {
+  bankAccountSync,
+  mapTransaction,
+  syncTransactions,
+} from "~/server/transactionSync"
+import { getUser } from "~/server/getUser"
+import { isServer } from "solid-js/web"
 
-export const routeData = (props: RouteDataArgs) => {
-  const data = createServerData$(async (_, event) => {
-    const session = await getSession(event.request, authOpts)
-    const user = session?.user
-    if (!session || !user) {
-      throw redirect("/")
-    }
-    const dbUser = await getUserFromEmail(user?.email!)
-    const transactions = await getTransactions(dbUser?.id!)
-    return { transactions, user: dbUser }
+export const routeData = (props: RouteDataArgs) =>
+  createServerData$(async (_, event) => {
+    const user = await getUser(event.request)
+    /* for (const item of user?.plaidItems || []) {
+     *   syncTransactions(item)
+     * } */
+    const transactions = await getTransactions(user?.id!)
+    return { transactions, userId: user?.id! }
   })
-  return () => ({
-    transactions: data()?.transactions.map((t) => ({
-      ...t,
-      date: coerceToDate(t.date),
-    })),
-    user: data()?.user,
-  })
-}
 
 const TransactionView = () => {
   const [state, _] = useContext(CentralStoreContext)!
   const [editingNewTransaction, setEditingNewTransaction] = createSignal(false)
   const [activeIndex, setActiveIndex] = createSignal<number>()
-  const data = useRouteData<typeof routeData>()
+  const rawData = useRouteData<typeof routeData>()
+  const data = createMemo(() => ({
+    ...rawData(),
+    transactions: rawData()?.transactions.map((t) => ({
+      ...t,
+      date: coerceToDate(t.date),
+    })),
+  }))
 
+  const [syncing, sync] = createServerAction$(async (_, event) => {
+    const user = await getUser(event.request)
+    for (const item of user?.plaidItems || []) {
+      syncTransactions(item)
+    }
+  })
+
+  onMount(() => {
+    sync()
+  })
   return (
     <div class="ml-64 w-auto">
       <div class="ml-4 mt-4 text-sm">
@@ -56,6 +81,7 @@ const TransactionView = () => {
             setEditingNewTransaction(true)
           }}
         >
+          <Show when={syncing.pending}>Syncing</Show>
           <div class="flex">
             <AiOutlinePlusCircle size={24} /> Add transaction
           </div>
@@ -76,7 +102,7 @@ const TransactionView = () => {
           </div>
           <Show when={editingNewTransaction()}>
             <TransactionForm
-              userID={data().user?.id}
+              userID={data().userId}
               setEditingNewTransaction={setEditingNewTransaction}
               deactivate={() => setEditingNewTransaction(false)}
             />
@@ -89,10 +115,9 @@ const TransactionView = () => {
               )()}
             >
               {(txn, i) => {
-                console.log(txn)
                 return (
                   <TransactionRow
-                    userID={data().user?.id!}
+                    userID={data().userId!}
                     txn={txn}
                     active={activeIndex() == i()}
                     activate={() => setActiveIndex(i())}

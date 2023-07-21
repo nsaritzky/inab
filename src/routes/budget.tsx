@@ -14,7 +14,11 @@ import { BudgetRow } from "~/components/BudgetRow"
 import { BudgetInspector } from "~/components/BudgetInspector"
 import { useKeyDownEvent } from "@solid-primitives/keyboard"
 import { useRouteData, type RouteDataArgs } from "solid-start"
-import { createServerAction$, createServerData$ } from "solid-start/server"
+import {
+  createServerAction$,
+  createServerData$,
+  redirect,
+} from "solid-start/server"
 import {
   getEnvelopes,
   getTransactions,

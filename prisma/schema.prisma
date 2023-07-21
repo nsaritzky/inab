@@ -20,6 +20,7 @@ model Transaction {
   description  String?
   userID       String
   user         User      @relation(fields: [userID], references: [id])
+  plaidID      String?   @unique
 }
 
 model Envelope {
@@ -96,7 +97,7 @@ model User {
   envelopes     Envelope[]
   goals         Goal[]
   allocated     Allocated[]
-  plaidItems     PlaidItem[]
+  plaidItems    PlaidItem[]
 }
 
 model VerificationToken {
@@ -108,8 +109,9 @@ model VerificationToken {
 }
 
 model PlaidItem {
-  id           String @id
+  id          String  @id
   accessToken String
-  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       String
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  cursor      String?
 }

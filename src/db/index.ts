@@ -122,6 +122,23 @@ export const saveTransactionFn = async (
     })
 }
 
+export const addTransactions = async (txns: Omit<Transaction, "id">[]) => {
+  for (const txn of txns) {
+    await db.transaction.create({ data: txn })
+  }
+}
+
+export const updateCursor = async (itemId: string, cursor: string) => {
+  await db.plaidItem.update({
+    where: {
+      id: itemId,
+    },
+    data: {
+      cursor,
+    },
+  })
+}
+
 export const updateTransactionFn = async (txn: Transaction) => {
   await db.transaction.update({ where: { id: txn.id }, data: txn })
 }

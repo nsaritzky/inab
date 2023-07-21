@@ -3,9 +3,10 @@ import { MonthYear } from "./types"
 import type { JSX, Signal } from "solid-js"
 import { DAY_ONE } from "./store"
 import { parseISO } from "date-fns"
-import { createServerData$ } from "solid-start/server"
+import { createServerData$, redirect } from "solid-start/server"
 import { getSession } from "@solid-auth/base"
 import { authOpts } from "./routes/api/auth/[...solidauth]"
+import { getUserFromEmail } from "./db"
 
 export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>
 
@@ -106,11 +107,20 @@ export function getOrdinal(n: number) {
   return ord
 }
 
-export const useSession = () => {
-  return createServerData$(
-    async (_, { request }) => {
-      return await getSession(request, authOpts)
-    },
-    { key: () => ["auth_user"] }
-  )
-}
+// export const useSession = () => {
+//   return createServerData$(
+//     async (_, { request }) => {
+//       return await getSession(request, authOpts)
+//     },
+//     { key: () => ["auth_user"] }
+//   )
+// }
+
+// export const useUser = async (request: Request) => {
+//   const session = await getSession(request, authOpts)
+//   const user = session?.user
+//   if (!session || !user) {
+//     throw redirect("/")
+//   }
+//   return (await getUserFromEmail(user?.email!))?.id
+// }

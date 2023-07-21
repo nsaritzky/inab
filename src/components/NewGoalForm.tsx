@@ -145,7 +145,6 @@ export const NewGoalForm = (props: Props) => {
     },
   }
   const initialValues = getInitialValues(props.activeGoal) || formDefaults
-  console.log(initialValues)
   const [goalForm, { Form, Field }] = createForm<NewGoalForm>({
     initialValues,
   })
