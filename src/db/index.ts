@@ -3,6 +3,7 @@ import { createServerAction$, createServerData$ } from "solid-start/server"
 import type { Transaction } from "@prisma/client"
 import type { Optional } from "~/utilities"
 import { endOfMonth } from "date-fns"
+import { AccountBase } from "plaid"
 
 const db = new PrismaClient()
 
@@ -24,7 +25,12 @@ export const getTransactions = async (userID: string) =>
     },
   })
 
-export const getEnvelopes = async (userID: string) => {
+export const getEnvelopes = async (userID: string) =>
+  await db.envelope.findMany({
+    where: { userID },
+  })
+
+export const getEnvelopesWithGoals = async (userID: string) => {
   const es = await db.envelope.findMany({
     include: { goals: true, allocated: true },
     where: {
@@ -180,34 +186,36 @@ export const savePlaidItemFn = async (
   userId: string,
   accts: AccountBase[]
 ) => {
-  await db.plaidItem.create({
-    data: {
-      id: itemId,
-      accessToken,
-      userId,
-      bankAccounts: {
-        create: accts.map((acct) => ({
-          name: acct.name,
-          plaidId: acct.account_id,
-          user: {
-            connect: {
-              id: userId,
+  await db.$transaction([
+    db.plaidItem.create({
+      data: {
+        id: itemId,
+        accessToken,
+        userId,
+        bankAccounts: {
+          create: accts.map((acct) => ({
+            name: acct.name,
+            plaidId: acct.account_id,
+            user: {
+              connect: {
+                id: userId,
+              },
             },
-          },
-        })),
+          })),
+        },
       },
-    },
-  })
-  db.plaidItem.update({
-    where: {
-      id: itemId,
-    },
-    data: {
-      bankAccounts: {
-        connect: accts.map((acct) => ({ plaidId: acct.account_id })),
+    }),
+    db.plaidItem.update({
+      where: {
+        id: itemId,
       },
-    },
-  })
+      data: {
+        bankAccounts: {
+          connect: accts.map((acct) => ({ plaidId: acct.account_id })),
+        },
+      },
+    }),
+  ])
 }
 
 // export const getPlaidItems = async (userId: string) =>

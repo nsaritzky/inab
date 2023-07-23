@@ -15,6 +15,7 @@ import { CentralStoreContext } from "../root"
 import { sort } from "@solid-primitives/signal-builders"
 import {
   addTransactions,
+  getEnvelopes,
   getTransactions,
   getUserFromEmail,
   updateCursor,
@@ -45,8 +46,9 @@ export const routeData = (props: RouteDataArgs) =>
     /* for (const item of user?.plaidItems || []) {
      *   syncTransactions(item)
      * } */
-    const transactions = await getTransactions(user?.id!)
-    return { transactions, userId: user?.id! }
+    const transactions = await getTransactions(user!.id)
+    const envelopes = await getEnvelopes(user!.id)
+    return { transactions, userId: user!.id, envelopes }
   })
 
 const TransactionView = () => {
@@ -68,6 +70,10 @@ const TransactionView = () => {
       syncTransactions(item)
     }
   })
+
+  const envelopeNames = createMemo(() =>
+    data().envelopes ? data().envelopes!.map((e) => e.name) : []
+  )
 
   onMount(() => {
     sync()
@@ -105,6 +111,7 @@ const TransactionView = () => {
               userID={data().userId}
               setEditingNewTransaction={setEditingNewTransaction}
               deactivate={() => setEditingNewTransaction(false)}
+              envelopeList={envelopeNames()}
             />
           </Show>
 
@@ -122,6 +129,7 @@ const TransactionView = () => {
                     active={activeIndex() == i()}
                     activate={() => setActiveIndex(i())}
                     deactivate={() => setActiveIndex(-1)}
+                    envelopeList={envelopeNames()}
                   />
                 )
               }}

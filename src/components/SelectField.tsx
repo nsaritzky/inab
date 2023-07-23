@@ -1,7 +1,7 @@
 import { TextField as Kobalte } from "@kobalte/core"
 import { type JSX, Show, splitProps } from "solid-js"
 import { Select, createOptions } from "@thisbeyond/solid-select"
-import("@thisbeyond/solid-select/style.css")
+import "@thisbeyond/solid-select/style.css"
 
 type SelectFieldProps = {
   name: string

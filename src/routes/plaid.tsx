@@ -95,10 +95,6 @@ const PlaidLink = () => {
     }
   )
 
-  createEffect(() => {
-    /* setToken(link_token()) */
-  })
-
   const onSuccess: PlaidLinkOnSuccess = (publicToken, metadata) => {
     console.log(publicToken)
     exchange(publicToken)

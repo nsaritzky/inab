@@ -3,7 +3,7 @@ import {
   type Transaction as PlaidTransaction,
   type RemovedTransaction,
 } from "plaid"
-import { PlaidItem, type Transaction } from "@prisma/client"
+import { Prisma, PlaidItem, type Transaction } from "@prisma/client"
 import server$ from "solid-start/server"
 import { addTransactions, updateCursor } from "~/db"
 
@@ -37,7 +37,6 @@ export const mapTransaction = (userID: string) => (txn: PlaidTransaction) =>
     amount: -1 * txn.amount,
     payee: txn.merchant_name || txn.name,
     description: null,
-    envelopeName: null,
     date: txn.authorized_date
       ? new Date(txn.authorized_date)
       : new Date(txn.date),

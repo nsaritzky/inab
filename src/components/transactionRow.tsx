@@ -1,5 +1,5 @@
 import { Setter, Show, createEffect, useContext } from "solid-js"
-import type { Transaction } from "@prisma/client"
+import type { Prisma } from "@prisma/client"
 import { BiRegularPencil, BiRegularTrash } from "solid-icons/bi"
 import { CentralStoreContext } from "../root"
 import { TransactionForm } from "./transactionForm"
@@ -8,7 +8,9 @@ import {
   createServerAction$,
   createServerMultiAction$,
 } from "solid-start/server"
-import { deleteTransaction } from "~/db"
+import { deleteTransaction, getTransactions } from "~/db"
+
+type Transaction = Prisma.PromiseReturnType<typeof getTransactions>[number]
 
 interface TransactionRowProps {
   txn: Transaction
@@ -16,6 +18,7 @@ interface TransactionRowProps {
   activate: () => number
   deactivate: () => void
   userID: string
+  envelopeList: string[]
 }
 
 interface TransactionDisplayProps {
@@ -95,6 +98,7 @@ export const TransactionRow = (props: TransactionRowProps) => {
           txn={props.txn}
           userID={props.userID}
           deactivate={props.deactivate}
+          envelopeList={props.envelopeList}
         />
       </Show>
     </Show>

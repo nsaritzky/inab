@@ -20,7 +20,7 @@ import {
   redirect,
 } from "solid-start/server"
 import {
-  getEnvelopes,
+  getEnvelopesWithGoals,
   getTransactions,
   getUserFromEmail,
   setAllocation,
@@ -54,7 +54,7 @@ export const routeData = (props: RouteDataArgs) => {
     const dbUser = await getUserFromEmail(user?.email!)
     return {
       transactions: await getTransactions(dbUser?.id!),
-      envelopes: await getEnvelopes(dbUser?.id!),
+      envelopes: await getEnvelopesWithGoals(dbUser?.id!),
       user: dbUser,
     }
   })
