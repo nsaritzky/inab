@@ -10,6 +10,7 @@ import { getUserFromEmail, savePlaidItemFn } from "~/db"
 import { PlaidLinkOptions, PlaidLinkOnSuccess } from "~/plaid"
 import { createPlaidLink } from "~/plaid/createPlaidLink"
 import { authOpts } from "./api/auth/[...solidauth]"
+import { plaidClient } from "~/server/plaidApi"
 const SANDBOX_URL = "https://sandbox.plaid.com"
 /*
  * export const useUser = async (request: Request) => {
@@ -80,10 +81,15 @@ const PlaidLink = () => {
         }
       )
       const responseData = await response.json()
+      const accountsResponse = await plaidClient.accountsGet({
+        access_token: responseData.access_token,
+      })
+      console.log(accountsResponse.data)
       await savePlaidItemFn(
         responseData.access_token,
         responseData.item_id,
-        userId!
+        userId!,
+        accountsResponse.data.accounts
       )
       console.log(responseData)
     }

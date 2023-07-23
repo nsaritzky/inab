@@ -19,6 +19,9 @@ export const getTransactions = async (userID: string) =>
     where: {
       userID,
     },
+    include: {
+      bankAccount: true,
+    },
   })
 
 export const getEnvelopes = async (userID: string) => {
@@ -122,7 +125,9 @@ export const saveTransactionFn = async (
     })
 }
 
-export const addTransactions = async (txns: Omit<Transaction, "id">[]) => {
+export const addTransactions = async (
+  txns: Prisma.TransactionCreateInput[]
+) => {
   for (const txn of txns) {
     await db.transaction.create({ data: txn })
   }
@@ -172,13 +177,35 @@ export const deleteGoalFn = async (envelopeName: string, userID: string) => {
 export const savePlaidItemFn = async (
   accessToken: string,
   itemId: string,
-  userId: string
+  userId: string,
+  accts: AccountBase[]
 ) => {
   await db.plaidItem.create({
     data: {
       id: itemId,
       accessToken,
       userId,
+      bankAccounts: {
+        create: accts.map((acct) => ({
+          name: acct.name,
+          plaidId: acct.account_id,
+          user: {
+            connect: {
+              id: userId,
+            },
+          },
+        })),
+      },
+    },
+  })
+  db.plaidItem.update({
+    where: {
+      id: itemId,
+    },
+    data: {
+      bankAccounts: {
+        connect: accts.map((acct) => ({ plaidId: acct.account_id })),
+      },
     },
   })
 }

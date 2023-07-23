@@ -32,9 +32,8 @@ export const bankAccountSync = async (
   return { added, modified, removed, nextCursor }
 }
 
-export const mapTransaction =
-  (userID: string) =>
-  (txn: PlaidTransaction): Omit<Transaction, "id"> => ({
+export const mapTransaction = (userID: string) => (txn: PlaidTransaction) =>
+  ({
     amount: -1 * txn.amount,
     payee: txn.merchant_name || txn.name,
     description: null,
@@ -42,9 +41,18 @@ export const mapTransaction =
     date: txn.authorized_date
       ? new Date(txn.authorized_date)
       : new Date(txn.date),
-    userID,
+    user: {
+      connect: {
+        id: userID,
+      },
+    },
+    bankAccount: {
+      connect: {
+        plaidId: txn.account_id,
+      },
+    },
     plaidID: txn.transaction_id,
-  })
+  } satisfies Prisma.TransactionCreateInput)
 
 export const syncTransactions = async ({
   id: itemId,

@@ -53,6 +53,7 @@ const TransactionDisplay = (props: TransactionDisplayProps) => {
       <div class="table-cell ">{props.txn.date.toLocaleDateString()}</div>
       <div class="table-cell ">{props.txn.payee}</div>
       <div class="table-cell ">{props.txn.envelopeName}</div>
+      <div class="table-cell">{props.txn.bankAccount.name}</div>
       <div class="table-cell ">{props.txn.description}</div>
       <div class="table-cell ">
         <button

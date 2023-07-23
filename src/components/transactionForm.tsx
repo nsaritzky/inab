@@ -21,13 +21,14 @@ import { Prisma, Transaction } from "@prisma/client"
 import { saveTransactionFn } from "~/db"
 import { Combobox } from "~/components/Combobox"
 import { createServerAction$ } from "solid-start/server"
-import { useSession } from "~/utilities"
+import { SelectField } from "./SelectField"
 
 interface AddTransactionFormProps {
   setEditingNewTransaction?: Setter<boolean>
   deactivate: () => void
   txn?: Transaction | undefined
   userID?: string
+  envelopeList: string[]
 }
 
 interface AddTransactionElement extends HTMLCollection {
@@ -51,7 +52,9 @@ type TransactionForm = {
   description?: string | undefined
 }
 
-export const TransactionForm: Component<AddTransactionFormProps> = (props) => {
+export const TransactionForm: Component<AddTransactionFormProps> = (
+  TFormProps
+) => {
   const [state, { addTransaction, editTransaction }] =
     useContext(CentralStoreContext)!
   const [inflow, setInflow] = createSignal<string>()
@@ -60,15 +63,18 @@ export const TransactionForm: Component<AddTransactionFormProps> = (props) => {
   const [savingTransaction, saveTransaction] =
     createServerAction$(saveTransactionFn)
 
-  const initialValues: Partial<TransactionForm> = props.txn
+  const initialValues: Partial<TransactionForm> = TFormProps.txn
     ? {
-        inflow: props.txn.amount > 0 ? props.txn.amount.toString() : "",
+        inflow:
+          TFormProps.txn.amount > 0 ? TFormProps.txn.amount.toString() : "",
         outflow:
-          props.txn.amount < 0 ? props.txn.amount.toString().slice(1) : "",
-        date: props.txn.date.toISOString().split("T")[0],
-        payee: props.txn.payee || undefined,
-        envelope: props.txn.envelopeName || undefined,
-        description: props.txn.description || undefined,
+          TFormProps.txn.amount < 0
+            ? TFormProps.txn.amount.toString().slice(1)
+            : "",
+        date: TFormProps.txn.date.toISOString().split("T")[0],
+        payee: TFormProps.txn.payee || undefined,
+        envelope: TFormProps.txn.envelopeName || undefined,
+        description: TFormProps.txn.description || undefined,
       }
     : { date: new Date().toISOString().split("T")[0] }
 
@@ -86,9 +92,9 @@ export const TransactionForm: Component<AddTransactionFormProps> = (props) => {
       return
     }
     createEffect(() => {
-      console.log(props.userID)
+      console.log(TFormProps.userID)
     })
-    props.deactivate()
+    TFormProps.deactivate()
     /* editTransaction(props.txn?.id || uuid, {
      *   inflow: parseFloat(values.inflow) || 0,
      *   outflow: parseFloat(values.outflow) || 0,
@@ -103,31 +109,50 @@ export const TransactionForm: Component<AddTransactionFormProps> = (props) => {
     saveTransaction(
       values.envelope
         ? {
-            id: props.txn?.id,
+            id: TFormProps.txn?.id,
             amount,
             date: new Date(`${values.date} 00:00:01`),
             payee: values.payee,
-            user: { connect: { id: props.userID } },
+            user: { connect: { id: TFormProps.userID } },
+            bankAccount: {
+              connect: {
+                userId_name: {
+                  userId: TFormProps.userID!,
+                  name: values.account,
+                },
+              },
+            },
             envelope: {
               connectOrCreate: {
                 where: {
-                  name_userID: { name: values.envelope, userID: props.userID! },
+                  name_userID: {
+                    name: values.envelope,
+                    userID: TFormProps.userID!,
+                  },
                 },
                 create: {
                   name: values.envelope,
-                  userID: props.userID!,
+                  userID: TFormProps.userID!,
                 },
               },
             },
             description: values.description,
           }
         : {
-            id: props.txn?.id,
+            id: TFormProps.txn?.id,
             amount,
             date: new Date(`${values.date} 00:00:01`),
             payee: values.payee,
             description: values.description,
-            userID: props.userID,
+            user: { connect: { id: TFormProps.userID } },
+            bankAccount: {
+              connect: {
+                userId_name: {
+                  userId: TFormProps.userID!,
+                  name: values.account,
+                },
+              },
+            },
           }
     )
     reset(newTransactionForm)
@@ -141,7 +166,8 @@ export const TransactionForm: Component<AddTransactionFormProps> = (props) => {
       class="mt-1 table-row text-xs"
       use:clickOutside={() => {
         console.log("clickOutside")
-        props.setEditingNewTransaction && props.setEditingNewTransaction(false)
+        TFormProps.setEditingNewTransaction &&
+          TFormProps.setEditingNewTransaction(false)
       }}
     >
       <Field name="id">
@@ -216,16 +242,16 @@ export const TransactionForm: Component<AddTransactionFormProps> = (props) => {
       {
         <Field name="envelope">
           {(field, props) => (
-            <Combobox
+            <SelectField
               {...props}
               class="table-cell w-32"
               placeholder="Envelope"
-              options={Object.keys(state.envelopes)}
+              choices={TFormProps.envelopeList}
               error={field.error}
               disabled={getValue(newTransactionForm, "inflow") != ""}
               value={field.value}
-              onChange={(e) =>
-                setValue(newTransactionForm, "envelope", e.currentTarget.value)
+              onChange={(value) =>
+                setValue(newTransactionForm, "envelope", value)
               }
             />
           )}

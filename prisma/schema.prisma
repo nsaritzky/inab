@@ -11,16 +11,18 @@ datasource db {
 }
 
 model Transaction {
-  id           Int       @id @default(autoincrement())
-  amount       Float
-  envelopeName String?
-  date         DateTime  @default(now())
-  envelope     Envelope? @relation(fields: [envelopeName, userID], references: [name, userID])
-  payee        String?
-  description  String?
-  userID       String
-  user         User      @relation(fields: [userID], references: [id])
-  plaidID      String?   @unique
+  id            Int         @id @default(autoincrement())
+  amount        Float
+  envelopeName  String?
+  date          DateTime    @default(now())
+  envelope      Envelope?   @relation(fields: [envelopeName, userID], references: [name, userID])
+  payee         String?
+  description   String?
+  userID        String
+  user          User        @relation(fields: [userID], references: [id])
+  plaidID       String?     @unique
+  bankAccount   BankAccount @relation(fields: [bankAccountId], references: [id])
+  bankAccountId Int
 }
 
 model Envelope {
@@ -45,6 +47,19 @@ model Goal {
   user         User     @relation(fields: [userID], references: [id])
 
   @@unique([envelopeName, userID])
+}
+
+model BankAccount {
+  id           Int           @id @default(autoincrement())
+  name         String
+  user         User          @relation(fields: [userId], references: [id])
+  userId       String
+  plaidId      String        @unique
+  plaidItem    PlaidItem?    @relation(fields: [plaidItemId], references: [id])
+  plaidItemId  String?
+  transactions Transaction[]
+
+  @@unique([userId, name])
 }
 
 model Allocated {
@@ -98,6 +113,7 @@ model User {
   goals         Goal[]
   allocated     Allocated[]
   plaidItems    PlaidItem[]
+  BankAccount   BankAccount[]
 }
 
 model VerificationToken {
@@ -109,9 +125,10 @@ model VerificationToken {
 }
 
 model PlaidItem {
-  id          String  @id
-  accessToken String
-  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      String
-  cursor      String?
+  id           String        @id
+  accessToken  String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  cursor       String?
+  bankAccounts BankAccount[]
 }
