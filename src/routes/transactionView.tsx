@@ -15,6 +15,7 @@ import { CentralStoreContext } from "../root"
 import { sort } from "@solid-primitives/signal-builders"
 import {
   addTransactions,
+  getAccountNames,
   getEnvelopes,
   getTransactions,
   getUserFromEmail,
@@ -48,7 +49,8 @@ export const routeData = (props: RouteDataArgs) =>
      * } */
     const transactions = await getTransactions(user!.id)
     const envelopes = await getEnvelopes(user!.id)
-    return { transactions, userId: user!.id, envelopes }
+    const accountNames = await getAccountNames(user!.id)
+    return { transactions, userId: user!.id, envelopes, accountNames }
   })
 
 const TransactionView = () => {
@@ -56,23 +58,28 @@ const TransactionView = () => {
   const [editingNewTransaction, setEditingNewTransaction] = createSignal(false)
   const [activeIndex, setActiveIndex] = createSignal<number>()
   const rawData = useRouteData<typeof routeData>()
-  const data = createMemo(() => ({
-    ...rawData(),
-    transactions: rawData()?.transactions.map((t) => ({
-      ...t,
-      date: coerceToDate(t.date),
-    })),
-  }))
+  const data = createMemo(() =>
+    rawData()
+      ? {
+          ...rawData()!,
+          transactions: rawData()!.transactions.map((t) => ({
+            ...t,
+            date: coerceToDate(t.date),
+          })),
+        }
+      : undefined
+  )
 
   const [syncing, sync] = createServerAction$(async (_, event) => {
     const user = await getUser(event.request)
+    console.log(user?.plaidItems)
     for (const item of user?.plaidItems || []) {
       syncTransactions(item)
     }
   })
 
   const envelopeNames = createMemo(() =>
-    data().envelopes ? data().envelopes!.map((e) => e.name) : []
+    data()?.envelopes ? data()!.envelopes.map((e) => e.name) : []
   )
 
   onMount(() => {
@@ -87,11 +94,11 @@ const TransactionView = () => {
             setEditingNewTransaction(true)
           }}
         >
-          <Show when={syncing.pending}>Syncing</Show>
           <div class="flex">
             <AiOutlinePlusCircle size={24} /> Add transaction
           </div>
         </button>
+        <Show when={syncing.pending}>Syncing</Show>
         <div
           class="table w-auto table-fixed divide-y"
           role="table"
@@ -106,25 +113,26 @@ const TransactionView = () => {
             <div class="table-cell w-20">Account</div>
             <div class="table-cell w-20">Description</div>
           </div>
-          <Show when={editingNewTransaction()}>
-            <TransactionForm
-              userID={data().userId}
-              setEditingNewTransaction={setEditingNewTransaction}
-              deactivate={() => setEditingNewTransaction(false)}
-              envelopeList={envelopeNames()}
-            />
-          </Show>
-
-          <Show when={data().transactions}>
+          <Show when={data()}>
+            <Show when={editingNewTransaction()}>
+              <TransactionForm
+                accountNames={data()!.accountNames}
+                userID={data()!.userId}
+                setEditingNewTransaction={setEditingNewTransaction}
+                deactivate={() => setEditingNewTransaction(false)}
+                envelopeList={envelopeNames()}
+              />
+            </Show>
             <For
-              each={sort(data().transactions!, (a, b) =>
+              each={sort(data()!.transactions!, (a, b) =>
                 compareDesc(a.date, b.date)
               )()}
             >
               {(txn, i) => {
                 return (
                   <TransactionRow
-                    userID={data().userId!}
+                    accountNames={data()!.accountNames}
+                    userID={data()!.userId}
                     txn={txn}
                     active={activeIndex() == i()}
                     activate={() => setActiveIndex(i())}

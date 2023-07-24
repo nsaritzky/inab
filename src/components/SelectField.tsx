@@ -1,7 +1,7 @@
 import { TextField as Kobalte } from "@kobalte/core"
 import { type JSX, Show, splitProps } from "solid-js"
 import { Select, createOptions } from "@thisbeyond/solid-select"
-import "@thisbeyond/solid-select/style.css"
+/* import "@thisbeyond/solid-select/style.css" */
 
 type SelectFieldProps = {
   name: string
@@ -15,6 +15,7 @@ type SelectFieldProps = {
   multiline?: boolean | undefined
   required?: boolean | undefined
   disabled?: boolean | undefined
+  createable?: boolean
   ref: (element: HTMLInputElement | HTMLTextAreaElement) => void
   onInput: JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, InputEvent>
   onChange: (e: string) => void
@@ -27,7 +28,7 @@ export function SelectField(props: SelectFieldProps) {
   return (
     <div class={props.class}>
       <Select
-        {...createOptions(props.choices, { createable: true })}
+        {...createOptions(props.choices, { createable: props.createable })}
         onChange={props.onChange}
         disabled={props.disabled}
         initialValue={rootProps.value}

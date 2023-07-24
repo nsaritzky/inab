@@ -180,6 +180,18 @@ export const deleteGoalFn = async (envelopeName: string, userID: string) => {
   })
 }
 
+export const getAccountNames = async (userId: string) => {
+  const accounts = await db.bankAccount.findMany({
+    where: {
+      userId,
+    },
+    select: {
+      name: true,
+    },
+  })
+  return accounts.map((acct) => acct.name)
+}
+
 export const savePlaidItemFn = async (
   accessToken: string,
   itemId: string,

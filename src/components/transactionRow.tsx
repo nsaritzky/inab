@@ -19,6 +19,7 @@ interface TransactionRowProps {
   deactivate: () => void
   userID: string
   envelopeList: string[]
+  accountNames: string[]
 }
 
 interface TransactionDisplayProps {
@@ -95,6 +96,7 @@ export const TransactionRow = (props: TransactionRowProps) => {
         fallback={<TransactionDisplay doDelete={doDelete} {...props} />}
       >
         <TransactionForm
+          accountNames={props.accountNames}
           txn={props.txn}
           userID={props.userID}
           deactivate={props.deactivate}

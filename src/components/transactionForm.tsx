@@ -29,6 +29,7 @@ interface AddTransactionFormProps {
   txn?: Transaction | undefined
   userID?: string
   envelopeList: string[]
+  accountNames: string[]
 }
 
 interface AddTransactionElement extends HTMLCollection {
@@ -55,11 +56,6 @@ type TransactionForm = {
 export const TransactionForm: Component<AddTransactionFormProps> = (
   TFormProps
 ) => {
-  const [state, { addTransaction, editTransaction }] =
-    useContext(CentralStoreContext)!
-  const [inflow, setInflow] = createSignal<string>()
-  const [outflow, setOutflow] = createSignal<string>()
-
   const [savingTransaction, saveTransaction] =
     createServerAction$(saveTransactionFn)
 
@@ -74,6 +70,7 @@ export const TransactionForm: Component<AddTransactionFormProps> = (
         date: TFormProps.txn.date.toISOString().split("T")[0],
         payee: TFormProps.txn.payee || undefined,
         envelope: TFormProps.txn.envelopeName || undefined,
+        account: TFormProps.txn.bankAccountName || undefined,
         description: TFormProps.txn.description || undefined,
       }
     : { date: new Date().toISOString().split("T")[0] }
@@ -106,55 +103,38 @@ export const TransactionForm: Component<AddTransactionFormProps> = (
      * }); */
     const amount =
       (parseFloat(values.inflow) || 0) - (parseFloat(values.outflow) || 0)
-    saveTransaction(
-      values.envelope
+    saveTransaction({
+      id: TFormProps.txn?.id,
+      amount,
+      date: new Date(`${values.date} 00:00:01`),
+      payee: values.payee,
+      user: { connect: { id: TFormProps.userID } },
+      bankAccount: {
+        connect: {
+          userId_name: {
+            userId: TFormProps.userID!,
+            name: values.account,
+          },
+        },
+      },
+      envelope: values.envelope
         ? {
-            id: TFormProps.txn?.id,
-            amount,
-            date: new Date(`${values.date} 00:00:01`),
-            payee: values.payee,
-            user: { connect: { id: TFormProps.userID } },
-            bankAccount: {
-              connect: {
-                userId_name: {
-                  userId: TFormProps.userID!,
-                  name: values.account,
-                },
-              },
-            },
-            envelope: {
-              connectOrCreate: {
-                where: {
-                  name_userID: {
-                    name: values.envelope,
-                    userID: TFormProps.userID!,
-                  },
-                },
-                create: {
+            connectOrCreate: {
+              where: {
+                name_userID: {
                   name: values.envelope,
                   userID: TFormProps.userID!,
                 },
               },
-            },
-            description: values.description,
-          }
-        : {
-            id: TFormProps.txn?.id,
-            amount,
-            date: new Date(`${values.date} 00:00:01`),
-            payee: values.payee,
-            description: values.description,
-            user: { connect: { id: TFormProps.userID } },
-            bankAccount: {
-              connect: {
-                userId_name: {
-                  userId: TFormProps.userID!,
-                  name: values.account,
-                },
+              create: {
+                name: values.envelope,
+                userID: TFormProps.userID!,
               },
             },
           }
-    )
+        : undefined,
+      description: values.description,
+    })
     reset(newTransactionForm)
   }
 
@@ -246,6 +226,7 @@ export const TransactionForm: Component<AddTransactionFormProps> = (
               {...props}
               class="table-cell w-32"
               placeholder="Envelope"
+              createable={true}
               choices={TFormProps.envelopeList}
               error={field.error}
               disabled={getValue(newTransactionForm, "inflow") != ""}
@@ -259,13 +240,14 @@ export const TransactionForm: Component<AddTransactionFormProps> = (
       }
       <Field name="account">
         {(field, props) => (
-          <TextField
+          <SelectField
             {...props}
+            choices={TFormProps.accountNames}
             placeholder="Account"
-            inputClass=" rounded p-1 border border-1 outline-none w-16"
             class="table-cell"
             value={field.value}
             error={field.error}
+            onChange={(value) => setValue(newTransactionForm, "account", value)}
           />
         )}
       </Field>

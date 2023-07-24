@@ -11,18 +11,18 @@ datasource db {
 }
 
 model Transaction {
-  id            Int         @id @default(autoincrement())
-  amount        Float
-  envelopeName  String?
-  date          DateTime    @default(now())
-  envelope      Envelope?   @relation(fields: [envelopeName, userID], references: [name, userID])
-  payee         String?
-  description   String?
-  userID        String
-  user          User        @relation(fields: [userID], references: [id])
-  plaidID       String?     @unique
-  bankAccount   BankAccount @relation(fields: [bankAccountId], references: [id])
-  bankAccountId Int
+  id              Int         @id @default(autoincrement())
+  amount          Float
+  envelopeName    String?
+  date            DateTime    @default(now())
+  envelope        Envelope?   @relation(fields: [envelopeName, userID], references: [name, userID])
+  payee           String?
+  description     String?
+  userID          String
+  user            User        @relation(fields: [userID], references: [id])
+  plaidID         String?     @unique
+  bankAccount     BankAccount @relation(fields: [userID, bankAccountName], references: [userId, name])
+  bankAccountName String
 }
 
 model Envelope {
