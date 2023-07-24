@@ -1,3 +1,59 @@
 @tailwind base;
 @tailwind components;
+
+.solid-select-container {
+  @apply relative;
+}
+.solid-select-container[data-disabled="true"] {
+  @apply pointer-events-none;
+}
+.solid-select-control {
+  @apply grid grid-cols-1 flex-wrap items-stretch rounded border border-gray-200 px-2 py-1 leading-normal;
+}
+.solid-select-control[focus-within="true"] {
+  @apply outline-dotted outline-gray-300;
+}
+.solid-select-control[data-multiple="true"][data-has-value="true"] {
+  @apply flex gap-1;
+}
+.solid-select-control[data-disabled="true"] {
+  @apply border-gray-300 bg-gray-100;
+}
+.solid-select-placeholder {
+  @apply col-start-1 row-start-1 text-gray-400;
+}
+.solid-select-single-value {
+  @apply col-start-1 row-start-1;
+}
+.solid-select-multi-value {
+  @apply flex items-center rounded bg-gray-100 px-[4px]  text-[85%] leading-[inherit];
+}
+/* .solid-select-multi-value-remove { */
+/*   @apply hover:text-shadow-xl px-1; */
+/* } */
+.solid-select-input {
+  @apply /* data-multiple:(caret-current) data-is-active:(caret-current) */ col-start-1 row-start-1 m-0 flex-1 border-0 bg-transparent p-0 caret-transparent outline-none text-inherit read-only:cursor-default;
+}
+.solid-select-list {
+  @apply /* color-[inherit] z-1 */ absolute mt-1 max-h-[50vh] min-w-full overflow-y-auto whitespace-nowrap rounded-sm bg-white p-2 shadow-lg;
+}
+.solid-select-option {
+  @apply cursor-default select-none px-4 py-2 text-[unset];
+}
+.solid-select-option[data-disabled="true"] {
+  @apply pointer-events-none text-gray-400;
+}
+.solid-select-option:hover {
+  @apply bg-gray-200;
+}
+.solid-select-option[data-focused="true"] {
+  @apply bg-gray-100;
+}
+.solid-select-option > mark {
+  @apply underline;
+}
+.solid-select-list-placeholder {
+  @apply cursor-default select-none px-4 py-2;
+}
+
 @tailwind utilities;
