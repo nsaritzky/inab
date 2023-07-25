@@ -32,7 +32,7 @@ export const Sidebar = () => {
           <NavButton panel="budget">Budget</NavButton>
         </li>
         <li>
-          <NavButton panel="transactionView">Transactions</NavButton>
+          <NavButton panel="transactions">Transactions</NavButton>
         </li>
       </ul>
     </div>

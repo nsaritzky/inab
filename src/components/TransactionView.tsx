@@ -1,17 +1,14 @@
 import {
   For,
   Show,
-  createEffect,
   createSignal,
-  useContext,
-  Suspense,
   onMount,
   createMemo,
+  Component,
 } from "solid-js"
 import { TransactionForm } from "~/components/transactionForm"
 import { TransactionRow } from "~/components//transactionRow"
 import { AiOutlinePlusCircle } from "solid-icons/ai"
-import { CentralStoreContext } from "../root"
 import { sort } from "@solid-primitives/signal-builders"
 import {
   addTransactions,
@@ -21,58 +18,42 @@ import {
   getUserFromEmail,
   updateCursor,
 } from "~/db"
-import { type RouteDataArgs, useRouteData, refetchRouteData } from "solid-start"
 import { compareAsc, compareDesc } from "date-fns"
-import {
-  createServerAction$,
-  createServerData$,
-  redirect,
-} from "solid-start/server"
-import { Transaction } from "@prisma/client"
+import { createServerAction$ } from "solid-start/server"
 import { coerceToDate } from "~/utilities"
-import { authOpts } from "./api/auth/[...solidauth]"
-import { getSession } from "@solid-auth/base"
-import { plaidClient } from "~/server/plaidApi"
-import {
-  bankAccountSync,
-  mapTransaction,
-  syncTransactions,
-} from "~/server/transactionSync"
+import { syncTransactions } from "~/server/transactionSync"
 import { getUser } from "~/server/getUser"
-import { isServer } from "solid-js/web"
+import { TransactionsRouteData } from "~/routes/transactions"
+import Pagination from "./Pagination"
 
-export const routeData = (props: RouteDataArgs) =>
-  createServerData$(async (_, event) => {
-    const user = await getUser(event.request)
-    /* for (const item of user?.plaidItems || []) {
-     *   syncTransactions(item)
-     * } */
-    const transactions = await getTransactions(user!.id)
-    const envelopes = await getEnvelopes(user!.id)
-    const accountNames = await getAccountNames(user!.id)
-    return { transactions, userId: user!.id, envelopes, accountNames }
-  })
+interface TransactionViewProps {
+  rawData: TransactionsRouteData
+}
 
-const TransactionView = () => {
-  const [state, _] = useContext(CentralStoreContext)!
-  const [editingNewTransaction, setEditingNewTransaction] = createSignal(false)
-  const [activeIndex, setActiveIndex] = createSignal<number>()
-  const rawData = useRouteData<typeof routeData>()
+export const TransactionView: Component<TransactionViewProps> = (props) => {
   const data = createMemo(() =>
-    rawData()
+    props.rawData
       ? {
-          ...rawData()!,
-          transactions: rawData()!.transactions.map((t) => ({
+          ...props.rawData!,
+          transactions: props.rawData!.transactions.map((t) => ({
             ...t,
             date: coerceToDate(t.date),
           })),
         }
       : undefined
   )
+  const [editingNewTransaction, setEditingNewTransaction] = createSignal(false)
+  const [activeIndex, setActiveIndex] = createSignal<number>()
+  const itemsPerPage = 50
+  const [currentPage, setCurrentPage] = createSignal(1)
+  const startIndex = createMemo(() => (currentPage() - 1) * itemsPerPage)
+  const endIndex = createMemo(() => startIndex() + itemsPerPage)
+  const pageItems = createMemo(() =>
+    data()?.transactions.slice(startIndex(), endIndex())
+  )
 
   const [syncing, sync] = createServerAction$(async (_, event) => {
     const user = await getUser(event.request)
-    console.log(user?.plaidItems)
     for (const item of user?.plaidItems || []) {
       syncTransactions(item)
     }
@@ -87,6 +68,7 @@ const TransactionView = () => {
   })
   return (
     <div class="ml-64 w-auto">
+      {" "}
       <div class="ml-4 mt-4 text-sm">
         <button
           onClick={(e) => {
@@ -124,9 +106,7 @@ const TransactionView = () => {
               />
             </Show>
             <For
-              each={sort(data()!.transactions!, (a, b) =>
-                compareDesc(a.date, b.date)
-              )()}
+              each={sort(pageItems()!, (a, b) => compareDesc(a.date, b.date))()}
             >
               {(txn, i) => {
                 return (
@@ -142,11 +122,14 @@ const TransactionView = () => {
                 )
               }}
             </For>
+            <Pagination
+              currentPage={currentPage()}
+              totalPages={Math.ceil(data()!.transactions.length / itemsPerPage)}
+              onPageChange={setCurrentPage}
+            />
           </Show>
         </div>
       </div>
     </div>
   )
 }
-
-export default TransactionView
