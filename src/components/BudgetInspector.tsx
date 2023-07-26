@@ -16,7 +16,7 @@ interface BudgetInspectorProps {
   activeEnvelope: Envelope & {
     transactions: Transaction[]
     allocated: number[]
-    goals: Goal
+    goals: Goal[]
   }
 
   activeGoal: Goal | undefined

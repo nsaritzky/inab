@@ -8,7 +8,7 @@ import { AccountBase } from "plaid"
 const db = new PrismaClient()
 
 export const getUserFromEmail = async (email: string) =>
-  await db.user.findUnique({
+  await db.user.findUniqueOrThrow({
     where: { email },
     include: {
       plaidItems: true,

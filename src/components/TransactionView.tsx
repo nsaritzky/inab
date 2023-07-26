@@ -81,21 +81,21 @@ export const TransactionView: Component<TransactionViewProps> = (props) => {
           </div>
         </button>
         <Show when={syncing.pending}>Syncing</Show>
-        <div
-          class="table w-auto table-fixed divide-y"
-          role="table"
-          aria-label="Transactions"
-        >
-          <div class="flex table-header-group text-left" role="row">
-            <div class="table-cell w-14">Inflow</div>
-            <div class="table-cell w-14">Outflow</div>
-            <div class="table-cell w-28">Date</div>
-            <div class="table-cell w-20">Payee</div>
-            <div class="table-cell w-36">Envelope</div>
-            <div class="table-cell w-20">Account</div>
-            <div class="table-cell w-20">Description</div>
-          </div>
-          <Show when={data()}>
+        <Show when={data()}>
+          <div
+            class="table table-fixed divide-y"
+            role="table"
+            aria-label="Transactions"
+          >
+            <div class="flex table-header-group text-left" role="row">
+              <div class="table-cell w-1/12">Inflow</div>
+              <div class="table-cell w-1/12">Outflow</div>
+              <div class="table-cell w-1/12">Date</div>
+              <div class="table-cell w-1/6">Payee</div>
+              <div class="table-cell w-1/6">Envelope</div>
+              <div class="table-cell w-1/6">Account</div>
+              <div class="table-cell w-1/6">Description</div>
+            </div>
             <Show when={editingNewTransaction()}>
               <TransactionForm
                 accountNames={data()!.accountNames}
@@ -122,13 +122,13 @@ export const TransactionView: Component<TransactionViewProps> = (props) => {
                 )
               }}
             </For>
-            <Pagination
-              currentPage={currentPage()}
-              totalPages={Math.ceil(data()!.transactions.length / itemsPerPage)}
-              onPageChange={setCurrentPage}
-            />
-          </Show>
-        </div>
+          </div>
+          <Pagination
+            currentPage={currentPage()}
+            totalPages={Math.ceil(data()!.transactions.length / itemsPerPage)}
+            onPageChange={setCurrentPage}
+          />
+        </Show>
       </div>
     </div>
   )

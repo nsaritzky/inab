@@ -29,7 +29,7 @@ export const routeData = (props: RouteDataArgs) =>
     const transactions = await getTransactions(user!.id)
     const envelopes = await getEnvelopes(user!.id)
     const accountNames = await getAccountNames(user!.id)
-    return { transactions, userId: user!.id, envelopes, accountNames }
+    return { transactions, userId: user.id, envelopes, accountNames }
   })
 
 export type TransactionsRouteData = ReturnType<

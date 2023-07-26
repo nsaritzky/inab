@@ -5,13 +5,14 @@ import {
   createEffect,
   createSignal,
   useContext,
+  createMemo,
 } from "solid-js"
 import type { Month, MonthYear } from "~/types"
-import MonthSelector from "~/components/monthSelector"
-import Unallocated from "~/components/unallocated"
-import { CentralStoreContext } from "~/root"
-import { BudgetRow } from "~/components/BudgetRow"
-import { BudgetInspector } from "~/components/BudgetInspector"
+import MonthSelector from "../components/monthSelector"
+import Unallocated from "../components/unallocated"
+import { CentralStoreContext } from "../root"
+import { BudgetRow } from "../components/BudgetRow"
+import { BudgetInspector } from "../components/BudgetInspector"
 import { useKeyDownEvent } from "@solid-primitives/keyboard"
 import { useRouteData, type RouteDataArgs } from "solid-start"
 import {
@@ -24,7 +25,7 @@ import {
   getTransactions,
   getUserFromEmail,
   setAllocation,
-} from "~/db"
+} from "../db"
 import {
   Allocated,
   Envelope,
@@ -32,11 +33,11 @@ import {
   Prisma,
   Transaction,
 } from "@prisma/client"
-import { coerceToDate, dateToIndex, parseDates, useSession } from "~/utilities"
+import { coerceToDate, dateToIndex, parseDates } from "../utilities"
 import { Suspense } from "solid-js"
 import { evolve } from "fp-ts/struct"
 import { isBefore, parseISO } from "date-fns"
-import { updateAt } from "~/utilities"
+import { updateAt } from "../utilities"
 import { getSession } from "@solid-auth/base"
 import { authOpts } from "./api/auth/[...solidauth]"
 
@@ -44,50 +45,53 @@ const ZEROS: number[] = Array(50).fill(0)
 
 interface BudgetProps {}
 
-export const routeData = (props: RouteDataArgs) => {
-  const data = createServerData$(async (_, event) => {
+export const routeData = (props: RouteDataArgs) =>
+  createServerData$(async (_, event) => {
     const session = await getSession(event.request, authOpts)
     const user = session?.user
     if (!session || !session.user) {
       throw redirect("/")
     }
-    const dbUser = await getUserFromEmail(user?.email!)
+    const dbUser = await getUserFromEmail(user!.email!)
     return {
-      transactions: await getTransactions(dbUser?.id!),
-      envelopes: await getEnvelopesWithGoals(dbUser?.id!),
+      transactions: await getTransactions(dbUser.id),
+      envelopes: await getEnvelopesWithGoals(dbUser.id),
       user: dbUser,
     }
   })
-  return () => ({
-    envelopes: data()?.envelopes?.map((e) => {
-      return {
-        ...e,
-        goals: e.goals.map((g) => ({
-          ...g,
-          due: coerceToDate(g.due),
-        })),
-        allocated: e.allocated.reduce(
-          (arr, allocated) =>
-            updateAt(allocated.monthIndex, allocated.amount)(arr),
-          ZEROS
-        ),
-      }
-    }),
-    transactions: data()?.transactions?.map((txn) => {
-      return {
-        ...txn,
-        date: coerceToDate(txn.date),
-      }
-    }),
-    user: data()?.user,
-  })
-}
 
 const Budget: Component<BudgetProps> = (props) => {
   const [state, _] = useContext(CentralStoreContext)!
   const [activeEnvelopeName, setActiveEnvelopeName] = createSignal<string>()
   const [editingGoal, setEditingGoal] = createSignal(false)
-  const data = useRouteData<typeof routeData>()
+  const rawData = useRouteData<typeof routeData>()
+  const data = createMemo(() =>
+    rawData()
+      ? {
+          envelopes: rawData()!.envelopes.map((e) => {
+            return {
+              ...e,
+              goals: e.goals.map((g) => ({
+                ...g,
+                due: coerceToDate(g.due),
+              })),
+              allocated: e.allocated.reduce(
+                (arr, allocated) =>
+                  updateAt(allocated.monthIndex, allocated.amount)(arr),
+                ZEROS
+              ),
+            }
+          }),
+          transactions: rawData()!.transactions?.map((txn) => {
+            return {
+              ...txn,
+              date: coerceToDate(txn.date),
+            }
+          }),
+          user: rawData()!.user,
+        }
+      : undefined
+  )
 
   const [allocating, allocate] = createServerAction$(
     async (form: FormData, { request }) => {
@@ -102,12 +106,12 @@ const Budget: Component<BudgetProps> = (props) => {
 
   const totalDeposited = () =>
     data()
-      .transactions?.filter((txn) => txn.amount > 0)
+      ?.transactions?.filter((txn) => txn.amount > 0)
       .reduce((sum, txn) => sum + txn.amount, 0)
 
   const totalAllocated = () =>
     data()
-      .envelopes?.map((envlp) => envlp.allocated)
+      ?.envelopes?.map((envlp) => envlp.allocated)
       .reduce((acc, arr) => [...acc, ...arr], [])
       .reduce((sum, a) => sum + a, 0)
 
@@ -117,14 +121,16 @@ const Budget: Component<BudgetProps> = (props) => {
       : undefined
 
   const envelopes = () =>
-    data().envelopes &&
-    data().transactions &&
-    Object.values(data().envelopes!).map((envlp) => ({
-      ...envlp,
-      transactions: data().transactions!.filter(
-        (txn) => txn.envelopeName === envlp.name
-      ),
-    }))
+    data()
+      ? data()!.envelopes &&
+        data()!.transactions &&
+        Object.values(data()!.envelopes).map((envlp) => ({
+          ...envlp,
+          transactions: data()!.transactions.filter(
+            (txn) => txn.envelopeName === envlp.name
+          ),
+        }))
+      : undefined
 
   const activeEnvelope = () =>
     envelopes()?.find((e) => e.name === activeEnvelopeName())
@@ -206,7 +212,7 @@ const Budget: Component<BudgetProps> = (props) => {
                         }}
                         deactivate={() => setActiveEnvelopeName()}
                         setActiveEnvelope={setActiveEnvelopeName}
-                        userID={data()?.user?.id}
+                        userID={data()!.user.id}
                       />
                     )}
                   </For>
@@ -226,15 +232,13 @@ const Budget: Component<BudgetProps> = (props) => {
                     netBalances(activeEnvelope()!).at(state.activeMonth - 1)!
                   }
                   allocatedThisMonth={
-                    activeEnvelope()?.allocated[state.activeMonth]!
+                    activeEnvelope()!.allocated[state.activeMonth]
                   }
                   activityThisMonth={activity(activeEnvelope()!)}
-                  activeEnvelope={
-                    envelopes()?.find((e) => e.name === activeEnvelopeName())! // TODO better error handling for this
-                  }
+                  activeEnvelope={activeEnvelope()!}
                   editingGoal={editingGoal()}
                   setEditingGoal={setEditingGoal}
-                  userID={data()?.user?.id!}
+                  userID={data()!.user.id}
                 />
               </Suspense>
             </Show>
