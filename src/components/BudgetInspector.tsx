@@ -5,7 +5,7 @@ import {
   createEffect,
   Setter,
 } from "solid-js"
-import { CentralStoreContext } from "../root"
+import CentralStoreContext from "~/CentralStoreContext"
 import { dateToIndex, displayUSD } from "../utilities"
 import { Show } from "solid-js"
 import { NewGoalForm } from "./NewGoalForm"

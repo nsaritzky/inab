@@ -6,7 +6,7 @@ import {
   ParentComponent,
 } from "solid-js"
 import type { Envelope, Goal, Transaction } from "@prisma/client"
-import { CentralStoreContext } from "../root"
+import CentralStoreContext from "~/CentralStoreContext"
 import { Show } from "solid-js"
 import { FormProps } from "solid-start"
 import { dateToIndex } from "~/utilities"
@@ -45,16 +45,16 @@ export const BudgetRow = (props: BudgetRowProps) => {
           .filter(
             (txn) =>
               dateToIndex(txn.date) == i &&
-              txn.envelopeName === props.envelope.name
+              txn.envelopeName === props.envelope.name,
           )
-          .reduce((sum, txn) => sum + txn.amount, 0)
+          .reduce((sum, txn) => sum + txn.amount, 0),
     )
 
   const netBalances = () =>
     monthlyBalances().map((_, i) =>
       monthlyBalances()
         .slice(0, i + 1)
-        .reduce((a, b) => a + b, 0)
+        .reduce((a, b) => a + b, 0),
     )
 
   return (
@@ -81,7 +81,7 @@ export const BudgetRow = (props: BudgetRowProps) => {
                   {
                     style: "currency",
                     currency: "USD",
-                  }
+                  },
                 )}
               </div>
             </div>

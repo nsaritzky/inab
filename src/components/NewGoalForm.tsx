@@ -30,7 +30,7 @@ import {
 } from "solid-js"
 import { getOrdinal } from "../utilities"
 import { Select } from "./Select"
-import { CentralStoreContext } from "../root"
+import CentralStoreContext from "~/CentralStoreContext"
 import { RadioGroup } from "./RadioGroup"
 import { Envelope, Goal } from "@prisma/client"
 import { deleteGoalFn, updateGoalFn } from "~/db"
@@ -100,7 +100,7 @@ type NewGoalForm = {
 }
 
 const getInitialValues = (
-  goal: Goal | undefined
+  goal: Goal | undefined,
 ): Partial<NewGoalForm> | undefined =>
   goal
     ? {
@@ -150,7 +150,7 @@ export const NewGoalForm = (props: Props) => {
   })
 
   const [goalFrequency, setGoalFrequency] = createSignal(
-    initialValues.frequency
+    initialValues.frequency,
   )
 
   const [deletingGoal, deleteGoal] = createServerAction$(deleteGoalFn)
@@ -169,7 +169,7 @@ export const NewGoalForm = (props: Props) => {
       case "Yearly":
         dueDate = setDate(
           setMonth(endOfToday(), months.indexOf(values.yearly.month)),
-          parseInt(values.yearly.day)
+          parseInt(values.yearly.day),
         )
         break
     }

@@ -54,29 +54,14 @@ const sampleTxns: Transaction[] = [
     date: new Date(),
   },
 ]
+
 export const initialState: Store = {
   transactions: [],
   accounts: [],
-  activeMonth: 5,
+  activeMonth: currentMonth,
   currentMonth,
   unallocated: 0,
-  envelopes: {
-    Rent: {
-      allocated: [0, 0, 0, 0, 0, 1000].concat(ZEROS),
-      goals: [
-        {
-          type: "Monthly",
-          amount: 700,
-          begin: new Date("2023-06-01"),
-          due: new Date("2023-06-15"),
-        },
-      ],
-    },
-    Groceries: {
-      allocated: [0, 0, 0, 0, 0, 300].concat(ZEROS),
-      goals: [],
-    },
-  },
+  envelopes: {},
   // panel: "transactions",
 }
 
@@ -96,7 +81,7 @@ export const useCentralStore = () => {
       envelope,
       account,
       description,
-    }: Omit<Transaction, "id" | "amount"> & { inflow: number; outflow: number }
+    }: Omit<Transaction, "id" | "amount"> & { inflow: number; outflow: number },
   ) => {
     const amount = inflow - outflow
     if (amount > 0) {
@@ -121,7 +106,7 @@ export const useCentralStore = () => {
       envelope,
       account,
       description,
-    }: Omit<Transaction, "id" | "amount"> & { inflow: number; outflow: number }
+    }: Omit<Transaction, "id" | "amount"> & { inflow: number; outflow: number },
   ) => {
     const newAmount = inflow - outflow
     if (typeof id == "string") {
@@ -140,7 +125,7 @@ export const useCentralStore = () => {
           envelope,
           account,
           description,
-        })
+        }),
       )
     } else {
       if (newAmount > 0) {
@@ -179,7 +164,7 @@ export const useCentralStore = () => {
       const activity = state.transactions
         .filter(
           (txn) =>
-            txn.envelope == nm && dateToIndex(txn.date) == state.activeMonth
+            txn.envelope == nm && dateToIndex(txn.date) == state.activeMonth,
         )
         .reduce((sum, txn) => sum + txn.amount, 0)
       Object.assign(result, { [nm]: activity })
@@ -196,10 +181,10 @@ export const useCentralStore = () => {
             x +
             state.transactions
               .filter((txn) => dateToIndex(txn.date) == i && txn.envelope == nm)
-              .reduce((sum, txn) => sum + txn.amount, 0)
+              .reduce((sum, txn) => sum + txn.amount, 0),
         ),
-      ])
-    )
+      ]),
+    ),
   )
 
   const netBalance = createMemo(() =>
@@ -207,10 +192,10 @@ export const useCentralStore = () => {
       Object.entries(monthlyBalances()).map(([nm, balances]) => [
         nm,
         balances.map((_, i) =>
-          balances.slice(0, i + 1).reduce((a, b) => a + b, 0)
+          balances.slice(0, i + 1).reduce((a, b) => a + b, 0),
         ),
-      ])
-    )
+      ]),
+    ),
   )
 
   const accountBalances = createMemo(() => {
@@ -233,7 +218,7 @@ export const useCentralStore = () => {
 
   const deleteGoal = (envelope: string, goal: Goal | undefined): void => {
     setState("envelopes", envelope, "goals", (goals) =>
-      goals.filter((g) => g.due != goal?.due)
+      goals.filter((g) => g.due != goal?.due),
     )
   }
 
@@ -241,14 +226,14 @@ export const useCentralStore = () => {
     () =>
       (envelope: string, date: Date): Goal | undefined => {
         const earlierGoals = state.envelopes[envelope].goals.filter((g) =>
-          isBefore(g.begin, date)
+          isBefore(g.begin, date),
         )
         const i = closestIndexTo(
           date,
-          earlierGoals.map((g) => g.begin)
+          earlierGoals.map((g) => g.begin),
         )
         return i != undefined ? earlierGoals[i] : undefined
-      }
+      },
   )
 
   const updateGoalDueDate = (envelope: string, date: Date) => {
@@ -271,7 +256,7 @@ export const useCentralStore = () => {
             envelope,
             "goals",
             (goal) => goal == getGoalAsOf()(envelope, date),
-            (goal) => ({ ...goal, due: newDueDate })
+            (goal) => ({ ...goal, due: newDueDate }),
           )
       }
     }
@@ -279,7 +264,7 @@ export const useCentralStore = () => {
 
   const getGoalStatus = (
     envelope: string,
-    date: Date
+    date: Date,
   ): GoalStatus | undefined => {
     const g = getGoalAsOf()(envelope, date)
     if (g) {

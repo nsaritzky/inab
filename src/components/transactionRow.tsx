@@ -34,20 +34,20 @@ interface TransactionEditProps {}
 const TransactionDisplay = (props: TransactionDisplayProps) => {
   return (
     <div
-      class="mb-1 table-row pt-1 text-xs"
-      onClick={props.activate}
+      class="mb-1 table-row truncate  pt-1 text-xs"
+      onClick={() => props.activate()}
       onKeyDown={(e) => console.log(e.key)}
       tabIndex="0"
       role="row"
     >
-      <div class="table-cell ">
+      <div class="table-cell">
         {props.txn.amount > 0 &&
           props.txn.amount.toLocaleString("en-us", {
             style: "currency",
             currency: "USD",
           })}{" "}
       </div>
-      <div class="table-cell ">
+      <div class="table-cell">
         {props.txn.amount < 0 &&
           props.txn.amount.toLocaleString("en-us", {
             style: "currency",
@@ -55,7 +55,9 @@ const TransactionDisplay = (props: TransactionDisplayProps) => {
           })}{" "}
       </div>
       <div class="table-cell ">{props.txn.date.toLocaleDateString()}</div>
-      <div class="table-cell ">{props.txn.payee}</div>
+      <div class="table-cell max-w-[12cqw] truncate" title={props.txn.payee}>
+        {props.txn.payee}
+      </div>
       <div class="table-cell ">{props.txn.envelopeName}</div>
       <div class="table-cell">{props.txn.bankAccount.name}</div>
       <div class="table-cell ">{props.txn.description}</div>

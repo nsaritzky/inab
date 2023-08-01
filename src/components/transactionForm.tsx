@@ -5,6 +5,7 @@ import {
   createSignal,
   useContext,
   createEffect,
+  createMemo,
 } from "solid-js"
 import { CentralStoreContext } from "../root"
 import {
@@ -22,6 +23,7 @@ import { saveTransactionFn } from "~/db"
 import { Combobox } from "~/components/Combobox"
 import { createServerAction$ } from "solid-start/server"
 import { SelectField } from "./SelectField"
+import { displayUSD } from "~/utilities"
 
 interface AddTransactionFormProps {
   setEditingNewTransaction?: Setter<boolean>
@@ -54,7 +56,7 @@ type TransactionForm = {
 }
 
 export const TransactionForm: Component<AddTransactionFormProps> = (
-  TFormProps
+  TFormProps,
 ) => {
   const [savingTransaction, saveTransaction] =
     createServerAction$(saveTransactionFn)
@@ -84,7 +86,7 @@ export const TransactionForm: Component<AddTransactionFormProps> = (
       setError(
         newTransactionForm,
         "inflow",
-        "Only one of inflow or outflow should be filled in"
+        "Only one of inflow or outflow should be filled in",
       )
       return
     }
@@ -178,21 +180,28 @@ export const TransactionForm: Component<AddTransactionFormProps> = (
         name="outflow"
         validate={[pattern(/\d+|\d*\.\d{2}/, "Badly formatted amount")]}
       >
-        {(field, props) => (
-          <TextField
-            {...props}
-            placeholder="$0.00"
-            class="table-cell "
-            inputClass=" rounded p-1 border border-1 outline-none w-12"
-            type="text"
-            onInput={(e) => {
-              setValue(newTransactionForm, "inflow", "")
-              setValue(newTransactionForm, "outflow", e.currentTarget.value)
-            }}
-            value={field.value}
-            error={field.error}
-          />
-        )}
+        {(field, props) => {
+          const displayValue = createMemo<string | undefined>((prev) =>
+            !isNaN(parseFloat(field.value || ""))
+              ? field.value && displayUSD(parseFloat(field.value))
+              : prev,
+          )
+          return (
+            <TextField
+              {...props}
+              placeholder="$0.00"
+              class="table-cell "
+              inputClass=" rounded p-1 border border-1 outline-none w-12"
+              type="text"
+              onInput={(e) => {
+                setValue(newTransactionForm, "inflow", "")
+                setValue(newTransactionForm, "outflow", e.currentTarget.value)
+              }}
+              value={field.value}
+              error={field.error}
+            />
+          )
+        }}
       </Field>
       <Field name="date">
         {(field, props) => (

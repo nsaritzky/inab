@@ -7,12 +7,11 @@ import {
   useContext,
   createMemo,
 } from "solid-js"
-import type { Month, MonthYear } from "~/types"
-import MonthSelector from "../components/monthSelector"
-import Unallocated from "../components/unallocated"
-import { CentralStoreContext } from "../root"
-import { BudgetRow } from "../components/BudgetRow"
-import { BudgetInspector } from "../components/BudgetInspector"
+import MonthSelector from "~/components/monthSelector"
+import CentralStoreContext from "~/CentralStoreContext"
+import Unallocated from "~/components/unallocated"
+import { BudgetRow } from "~/components/BudgetRow"
+import { BudgetInspector } from "~/components/BudgetInspector"
 import { useKeyDownEvent } from "@solid-primitives/keyboard"
 import { useRouteData, type RouteDataArgs } from "solid-start"
 import {
@@ -61,7 +60,7 @@ export const routeData = (props: RouteDataArgs) =>
   })
 
 const Budget: Component<BudgetProps> = (props) => {
-  const [state, _] = useContext(CentralStoreContext)!
+  const [state] = useContext(CentralStoreContext)!
   const [activeEnvelopeName, setActiveEnvelopeName] = createSignal<string>()
   const [editingGoal, setEditingGoal] = createSignal(false)
   const rawData = useRouteData<typeof routeData>()
@@ -78,7 +77,7 @@ const Budget: Component<BudgetProps> = (props) => {
               allocated: e.allocated.reduce(
                 (arr, allocated) =>
                   updateAt(allocated.monthIndex, allocated.amount)(arr),
-                ZEROS
+                ZEROS,
               ),
             }
           }),
@@ -90,7 +89,7 @@ const Budget: Component<BudgetProps> = (props) => {
           }),
           user: rawData()!.user,
         }
-      : undefined
+      : undefined,
   )
 
   const [allocating, allocate] = createServerAction$(
@@ -99,9 +98,9 @@ const Budget: Component<BudgetProps> = (props) => {
         form.get("userID") as string,
         form.get("envelopeName") as string,
         parseInt(form.get("monthIndex") as string),
-        parseFloat(form.get("amount") as string)
+        parseFloat(form.get("amount") as string),
       )
-    }
+    },
   )
 
   const totalDeposited = () =>
@@ -127,7 +126,7 @@ const Budget: Component<BudgetProps> = (props) => {
         Object.values(data()!.envelopes).map((envlp) => ({
           ...envlp,
           transactions: data()!.transactions.filter(
-            (txn) => txn.envelopeName === envlp.name
+            (txn) => txn.envelopeName === envlp.name,
           ),
         }))
       : undefined
@@ -143,7 +142,7 @@ const Budget: Component<BudgetProps> = (props) => {
       .reduce((sum, txn) => sum + txn.amount, 0)
 
   const monthlyBalances = (
-    envelope: Envelope & { transactions: Transaction[]; allocated: number[] }
+    envelope: Envelope & { transactions: Transaction[]; allocated: number[] },
   ) =>
     envelope.allocated.map(
       (x, i) =>
@@ -151,18 +150,18 @@ const Budget: Component<BudgetProps> = (props) => {
         envelope.transactions
           .filter(
             (txn) =>
-              dateToIndex(txn.date) == i && txn.envelopeName === envelope.name
+              dateToIndex(txn.date) == i && txn.envelopeName === envelope.name,
           )
-          .reduce((sum, txn) => sum + txn.amount, 0)
+          .reduce((sum, txn) => sum + txn.amount, 0),
     )
 
   const netBalances = (
-    envelope: Envelope & { transactions: Transaction[]; allocated: number[] }
+    envelope: Envelope & { transactions: Transaction[]; allocated: number[] },
   ) =>
     monthlyBalances(envelope).map((_, i) =>
       monthlyBalances(envelope)
         .slice(0, i + 1)
-        .reduce((a, b) => a + b, 0)
+        .reduce((a, b) => a + b, 0),
     )
 
   const keyDownEvent = useKeyDownEvent()

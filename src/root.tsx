@@ -2,9 +2,7 @@
 import { createContext, Suspense } from "solid-js"
 import {
   useLocation,
-  A,
   Body,
-  ErrorBoundary,
   FileRoutes,
   Head,
   Html,
@@ -17,9 +15,7 @@ import { Sidebar } from "./components/sidebar"
 import "./root.css"
 import { useCentralStore } from "./store"
 import { SessionProvider } from "@solid-auth/base/client"
-
-export const CentralStoreContext =
-  createContext<ReturnType<typeof useCentralStore>>()
+import CentralStoreContext from "./CentralStoreContext"
 
 export default function Root() {
   const ctx = useCentralStore()
@@ -31,7 +27,7 @@ export default function Root() {
   return (
     <Html lang="en">
       <Head>
-        <Title>SolidStart - With TailwindCSS</Title>
+        <Title>flite</Title>
         <Meta charset="utf-8" />
         <Meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
