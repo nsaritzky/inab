@@ -17,9 +17,7 @@ import { Sidebar } from "./components/sidebar"
 import "./root.css"
 import { useCentralStore } from "./store"
 import { SessionProvider } from "@solid-auth/base/client"
-
-export const CentralStoreContext =
-  createContext<ReturnType<typeof useCentralStore>>()
+import CentralStoreContext from "./CentralStoreContext"
 
 export default function Root() {
   const ctx = useCentralStore()

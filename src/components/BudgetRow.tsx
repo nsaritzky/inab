@@ -6,7 +6,7 @@ import {
   ParentComponent,
 } from "solid-js"
 import type { Envelope, Goal, Transaction } from "@prisma/client"
-import { CentralStoreContext } from "../root"
+import CentralStoreContext from "~/CentralStoreContext"
 import { Show } from "solid-js"
 import { FormProps } from "solid-start"
 import { dateToIndex } from "~/utilities"

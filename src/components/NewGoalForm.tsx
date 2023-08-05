@@ -30,7 +30,7 @@ import {
 } from "solid-js"
 import { getOrdinal } from "../utilities"
 import { Select } from "./Select"
-import { CentralStoreContext } from "../root"
+import CentralStoreContext from "~/CentralStoreContext"
 import { RadioGroup } from "./RadioGroup"
 import { Envelope, Goal } from "@prisma/client"
 import { deleteGoalFn, updateGoalFn } from "~/db"

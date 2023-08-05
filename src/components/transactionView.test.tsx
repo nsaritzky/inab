@@ -1,10 +1,10 @@
-import { describe, expect, test } from "vitest";
-import { render, screen, fireEvent, getAllByRole } from "solid-testing-library";
-import { TransactionView } from "./transactionView";
-import "@testing-library/jest-dom";
-import { createCentralStore } from "../store";
-import { createContext } from "solid-js";
-import { CentralStoreContext } from "../root";
+import { describe, expect, test } from "vitest"
+import { render, screen, fireEvent, getAllByRole } from "solid-testing-library"
+import "@testing-library/jest-dom"
+import { useCentralStore } from "../store"
+import CentralStoreContext from "../CentralStoreContext"
+import { createContext } from "solid-js"
+import { TransactionView } from "./TransactionView"
 
 test("the add transaction button causes the form to pop up", () => {
   const store = createCentralStore();
