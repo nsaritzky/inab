@@ -5,8 +5,9 @@ import {
   createSignal,
   useContext,
   createEffect,
+  createMemo,
 } from "solid-js"
-import { CentralStoreContext } from "../root"
+import CentralStoreContext from "../CentralStoreContext"
 import {
   SubmitHandler,
   createForm,
@@ -18,18 +19,27 @@ import {
 } from "@modular-forms/solid"
 import { TextField } from "./TextField"
 import { Prisma, Transaction } from "@prisma/client"
-import { saveTransactionFn } from "~/db"
-import { Combobox } from "~/components/Combobox"
+import {
+  editTransactionFn,
+  saveNewTransactionFn,
+  saveTransactionFn,
+} from "~/db"
 import { createServerAction$ } from "solid-start/server"
 import { SelectField } from "./SelectField"
+import { displayUSD } from "~/utilities"
+import CurrencyInput from "solid-currency-input-field"
+import Checkbox from "./Checkbox"
 
 interface AddTransactionFormProps {
   setEditingNewTransaction?: Setter<boolean>
   deactivate: () => void
+  checked: boolean
+  setChecked: (b: boolean) => void
   txn?: Transaction | undefined
   userID?: string
   envelopeList: string[]
   accountNames: string[]
+  newTransaction: boolean
 }
 
 interface AddTransactionElement extends HTMLCollection {
@@ -54,25 +64,27 @@ type TransactionForm = {
 }
 
 export const TransactionForm: Component<AddTransactionFormProps> = (
-  TFormProps
+  TFormProps,
 ) => {
-  const [savingTransaction, saveTransaction] =
-    createServerAction$(saveTransactionFn)
+  const [_savingNewTransaction, saveNewTransaction] =
+    createServerAction$(saveNewTransactionFn)
+  const [_editingTransaction, editTransaction] =
+    createServerAction$(editTransactionFn)
 
   const initialValues: Partial<TransactionForm> = TFormProps.txn
     ? {
-        inflow:
-          TFormProps.txn.amount > 0 ? TFormProps.txn.amount.toString() : "",
-        outflow:
-          TFormProps.txn.amount < 0
-            ? TFormProps.txn.amount.toString().slice(1)
-            : "",
-        date: TFormProps.txn.date.toISOString().split("T")[0],
-        payee: TFormProps.txn.payee || undefined,
-        envelope: TFormProps.txn.envelopeName || undefined,
-        account: TFormProps.txn.bankAccountName || undefined,
-        description: TFormProps.txn.description || undefined,
-      }
+      inflow:
+        TFormProps.txn.amount > 0 ? TFormProps.txn.amount.toString() : "",
+      outflow:
+        TFormProps.txn.amount < 0
+          ? TFormProps.txn.amount.toString().slice(1)
+          : "",
+      date: TFormProps.txn.date.toISOString().split("T")[0],
+      payee: TFormProps.txn.payee || undefined,
+      envelope: TFormProps.txn.envelopeName || undefined,
+      account: TFormProps.txn.bankAccountName || undefined,
+      description: TFormProps.txn.description || undefined,
+    }
     : { date: new Date().toISOString().split("T")[0] }
 
   const [newTransactionForm, { Form, Field }] = createForm<TransactionForm>({
@@ -84,13 +96,10 @@ export const TransactionForm: Component<AddTransactionFormProps> = (
       setError(
         newTransactionForm,
         "inflow",
-        "Only one of inflow or outflow should be filled in"
+        "Only one of inflow or outflow should be filled in",
       )
       return
     }
-    createEffect(() => {
-      console.log(TFormProps.userID)
-    })
     TFormProps.deactivate()
     /* editTransaction(props.txn?.id || uuid, {
      *   inflow: parseFloat(values.inflow) || 0,
@@ -103,7 +112,7 @@ export const TransactionForm: Component<AddTransactionFormProps> = (
      * }); */
     const amount =
       (parseFloat(values.inflow) || 0) - (parseFloat(values.outflow) || 0)
-    saveTransaction({
+    const data = {
       id: TFormProps.txn?.id,
       amount,
       date: new Date(`${values.date} 00:00:01`),
@@ -119,22 +128,27 @@ export const TransactionForm: Component<AddTransactionFormProps> = (
       },
       envelope: values.envelope
         ? {
-            connectOrCreate: {
-              where: {
-                name_userID: {
-                  name: values.envelope,
-                  userID: TFormProps.userID!,
-                },
-              },
-              create: {
+          connectOrCreate: {
+            where: {
+              name_userID: {
                 name: values.envelope,
                 userID: TFormProps.userID!,
               },
             },
-          }
+            create: {
+              name: values.envelope,
+              userID: TFormProps.userID!,
+            },
+          },
+        }
         : undefined,
       description: values.description,
-    })
+    }
+    if (data.id) {
+      editTransaction({ ...data, id: data.id })
+    } else {
+      saveNewTransaction({ ...data, source: "user" })
+    }
     reset(newTransactionForm)
   }
 
@@ -144,62 +158,76 @@ export const TransactionForm: Component<AddTransactionFormProps> = (
       aria-label="Edit Transaction"
       id="Edit Transaction"
       class="mt-1 table-row text-xs"
-      use:clickOutside={() => {
+      use: clickOutside={() => {
         console.log("clickOutside")
         TFormProps.setEditingNewTransaction &&
           TFormProps.setEditingNewTransaction(false)
       }}
     >
+      <div class="table-cell">
+        <Checkbox
+          checked={TFormProps.checked}
+          onChange={TFormProps.setChecked}
+        />
+      </div>
+      <div class="table-cell"></div>
       <Field name="id">
-        {(field, props) => <input type="hidden" value={field.value} />}
+        {(field, _) => <input type="hidden" value={field.value} />}
       </Field>
-      <Field
-        name="inflow"
-        validate={[pattern(/\d+|\d*\.\d{2}/, "Badly formatted amount")]}
-      >
+      <Field name="inflow">
         {(field, props) => (
-          <TextField
-            {...props}
-            placeholder="$0.00"
-            class="table-cell outline-none"
-            aria-label="outflow"
-            inputClass="rounded p-1 border border-1 outline-none w-12"
-            type="text"
-            onInput={(e) => {
-              setValue(newTransactionForm, "outflow", "")
-              setValue(newTransactionForm, "inflow", e.currentTarget.value)
-            }}
-            value={field.value}
-            error={field.error}
-          />
+          <div class="table-cell outline-none w-full">
+            <CurrencyInput
+              {...props}
+              placeholder="$0.00"
+              decimalsLimit={2}
+              decimalScale={2}
+              prefix="$"
+              aria-label="inflow"
+              class="rounded p-1 border border-1 outline-none w-16"
+              type="text"
+              onValueChange={(val) => {
+                setValue(newTransactionForm, "outflow", "")
+                setValue(newTransactionForm, "inflow", val || "")
+              }}
+              value={field.value}
+            />
+          </div>
         )}
       </Field>
-      <Field
-        name="outflow"
-        validate={[pattern(/\d+|\d*\.\d{2}/, "Badly formatted amount")]}
-      >
-        {(field, props) => (
-          <TextField
-            {...props}
-            placeholder="$0.00"
-            class="table-cell "
-            inputClass=" rounded p-1 border border-1 outline-none w-12"
-            type="text"
-            onInput={(e) => {
-              setValue(newTransactionForm, "inflow", "")
-              setValue(newTransactionForm, "outflow", e.currentTarget.value)
-            }}
-            value={field.value}
-            error={field.error}
-          />
-        )}
+      <Field name="outflow">
+        {(field, props) => {
+          const displayValue = createMemo<string | undefined>((prev) =>
+            !isNaN(parseFloat(field.value || ""))
+              ? field.value && displayUSD(parseFloat(field.value))
+              : prev,
+          )
+          return (
+            <div class="table-cell">
+              <CurrencyInput
+                {...props}
+                placeholder="$0.00"
+                decimalsLimit={2}
+                decimalScale={2}
+                prefix="$"
+                class=" rounded p-1 border border-1 outline-none w-16"
+                type="text"
+                onValueChange={(val) => {
+                  setValue(newTransactionForm, "inflow", "")
+                  setValue(newTransactionForm, "outflow", val || "")
+                }}
+                value={field.value}
+              />
+            </div>
+          )
+        }}
       </Field>
       <Field name="date">
         {(field, props) => (
           <TextField
             {...props}
             type="date"
-            inputClass="rounded p-1 border border-1 outline-none w-24"
+            inputClass="rounded p-1 border border-1 outline-none w-[5.5rem]"
             class="table-cell"
             value={field.value}
             error={field.error}
@@ -212,7 +240,7 @@ export const TransactionForm: Component<AddTransactionFormProps> = (
           <TextField
             {...props}
             placeholder="Payee"
-            inputClass="p-1 rounded border border-1 outline-none w-16"
+            inputClass="p-1 rounded border border-1 outline-none w-full"
             class="table-cell"
             value={field.value}
             error={field.error}
@@ -256,7 +284,7 @@ export const TransactionForm: Component<AddTransactionFormProps> = (
           <TextField
             {...props}
             placeholder="Description"
-            inputClass="p-1 rounded  border border-1 outline-none w-16"
+            inputClass="p-1 rounded  border border-1 outline-none w-full"
             class="table-cell"
             value={field.value}
             error={field.error}

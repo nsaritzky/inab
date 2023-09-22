@@ -10,6 +10,7 @@ import CentralStoreContext from "~/CentralStoreContext"
 import { Show } from "solid-js"
 import { FormProps } from "solid-start"
 import { dateToIndex } from "~/utilities"
+import CurrencyInput from "solid-currency-input-field"
 
 interface BudgetRowProps {
   name: string
@@ -31,6 +32,7 @@ export const BudgetRow = (props: BudgetRowProps) => {
   const [state, { envelopeBalances, netBalance, allocate }] =
     useContext(CentralStoreContext)!
   const [editing, setEditing] = createSignal(false)
+  const [value, setValue] = createSignal<string>()
 
   const activity = () =>
     props.envelope.transactions
@@ -45,16 +47,16 @@ export const BudgetRow = (props: BudgetRowProps) => {
           .filter(
             (txn) =>
               dateToIndex(txn.date) == i &&
-              txn.envelopeName === props.envelope.name
+              txn.envelopeName === props.envelope.name,
           )
-          .reduce((sum, txn) => sum + txn.amount, 0)
+          .reduce((sum, txn) => sum + txn.amount, 0),
     )
 
   const netBalances = () =>
     monthlyBalances().map((_, i) =>
       monthlyBalances()
         .slice(0, i + 1)
-        .reduce((a, b) => a + b, 0)
+        .reduce((a, b) => a + b, 0),
     )
 
   return (
@@ -81,7 +83,7 @@ export const BudgetRow = (props: BudgetRowProps) => {
                   {
                     style: "currency",
                     currency: "USD",
-                  }
+                  },
                 )}
               </div>
             </div>
@@ -91,15 +93,19 @@ export const BudgetRow = (props: BudgetRowProps) => {
             <props.Form
               name="allocate"
               onSubmit={(e) => {
-                console.log(e.target)
                 props.deactivate()
               }}
             >
-              <input
+              <CurrencyInput
                 type="text"
                 class=" w-full rounded"
-                name="amount"
-                value={props.envelope.allocated[state.activeMonth]}
+                name="amountInput"
+                decimalScale={2}
+                groupSeparator=","
+                decimalSeparator="."
+                intlConfig={{ locale: "en-US", currency: "USD" }}
+                onValueChange={(value) => setValue(value)}
+                defaultValue={props.envelope.allocated[state.activeMonth]}
                 ref={inputRef!}
               />
               <input type="hidden" name="envelopeName" value={props.name} />
@@ -109,6 +115,7 @@ export const BudgetRow = (props: BudgetRowProps) => {
                 value={state.activeMonth}
               />
               <input type="hidden" name="userID" value={props.userID} />
+              <input type="hidden" name="amount" value={value()} />
             </props.Form>
           </div>
         </Show>

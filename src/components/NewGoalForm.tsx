@@ -35,6 +35,7 @@ import { RadioGroup } from "./RadioGroup"
 import { Envelope, Goal } from "@prisma/client"
 import { deleteGoalFn, updateGoalFn } from "~/db"
 import { createServerAction$ } from "solid-start/server"
+import CurrencyInput from "solid-currency-input-field"
 
 interface Props {
   envelope: Envelope & { goals: Goal[] }
@@ -100,34 +101,34 @@ type NewGoalForm = {
 }
 
 const getInitialValues = (
-  goal: Goal | undefined
+  goal: Goal | undefined,
 ): Partial<NewGoalForm> | undefined =>
   goal
     ? {
-        amount: goal.amount.toString(),
-        frequency: goal.type as Frequency,
-        weekly:
-          goal.type === "Weekly"
-            ? {
-                due: getDay(goal.due).toString(),
-              }
-            : undefined,
+      amount: goal.amount.toString(),
+      frequency: goal.type as Frequency,
+      weekly:
+        goal.type === "Weekly"
+          ? {
+            due: getDay(goal.due).toString(),
+          }
+          : undefined,
 
-        monthly:
-          goal.type == "Monthly"
-            ? {
-                due: getDate(goal.due).toString(),
-              }
-            : undefined,
+      monthly:
+        goal.type == "Monthly"
+          ? {
+            due: getDate(goal.due).toString(),
+          }
+          : undefined,
 
-        yearly:
-          goal.type === "Yearly"
-            ? {
-                month: months[getMonth(goal.due)],
-                day: getDate(goal.due).toString(),
-              }
-            : undefined,
-      }
+      yearly:
+        goal.type === "Yearly"
+          ? {
+            month: months[getMonth(goal.due)],
+            day: getDate(goal.due).toString(),
+          }
+          : undefined,
+    }
     : undefined
 
 export const NewGoalForm = (props: Props) => {
@@ -150,7 +151,7 @@ export const NewGoalForm = (props: Props) => {
   })
 
   const [goalFrequency, setGoalFrequency] = createSignal(
-    initialValues.frequency
+    initialValues.frequency,
   )
 
   const [deletingGoal, deleteGoal] = createServerAction$(deleteGoalFn)
@@ -169,7 +170,7 @@ export const NewGoalForm = (props: Props) => {
       case "Yearly":
         dueDate = setDate(
           setMonth(endOfToday(), months.indexOf(values.yearly.month)),
-          parseInt(values.yearly.day)
+          parseInt(values.yearly.day),
         )
         break
     }
@@ -194,12 +195,12 @@ export const NewGoalForm = (props: Props) => {
     <Form onSubmit={onSubmit}>
       <Field name="amount" validate={required("Please enter an amount")}>
         {(field, props) => (
-          <TextField
+          <CurrencyInput
             {...props}
-            label="Amount"
-            inputClass="outline-none rounded px-1 outline outline-blue-400 m-1"
+            class="outline-none rounded px-1 outline outline-blue-400 m-1"
             value={field.value}
-            error={field.error}
+            prefix="$"
+            onValueChange={(val) => setValue(goalForm, "amount", val || "")}
             required
           />
         )}

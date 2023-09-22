@@ -18,10 +18,12 @@ type ParseDates<O extends object> = {
     : O[K]
 }
 
+export const capitalize = (s: string): string =>
+  s.charAt(0).toUpperCase() + s.slice(1)
+
 export const updateAt =
   <T>(i: number, a: T) =>
-  (arr: T[]): T[] =>
-    [...arr.slice(0, i), a, ...arr.slice(i + 1)]
+  (arr: T[]): T[] => [...arr.slice(0, i), a, ...arr.slice(i + 1)]
 
 export const parseDates = <O extends object>(obj: O): ParseDates<O> =>
   Object.fromEntries(
@@ -33,7 +35,7 @@ export const parseDates = <O extends object>(obj: O): ParseDates<O> =>
       if (typeof value === "string" && value.match(dateStringRegex))
         return [key, new Date(value)]
       return [key, value]
-    })
+    }),
   ) as ParseDates<O>
 
 export const deepDateMap = (obj: object, f: any) => {
@@ -47,7 +49,7 @@ export const dateToMonthYear = (date: Date): MonthYear =>
 
 export function clickOutside(
   el: HTMLDivElement,
-  accessor: Accessor<() => void>
+  accessor: Accessor<() => void>,
 ) {
   const onClick: any = (e: any) => el.contains(e.target) && accessor()?.()
   document.body.addEventListener("click", onClick)
@@ -105,6 +107,20 @@ export function getOrdinal(n: number) {
   }
 
   return ord
+}
+
+type PartialFunc<T, S> = (x: T) => S | undefined
+
+// Map a partial function over an array by keeping only the defined results
+export function mapPartial<T, S>(list: T[], f: PartialFunc<T, S>): S[] {
+  let result: S[] = []
+  for (const x of list) {
+    const y = f(x)
+    if (y) {
+      result.push(y)
+    }
+  }
+  return result
 }
 
 // export const useSession = () => {

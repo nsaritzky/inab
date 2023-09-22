@@ -23,11 +23,22 @@ model Transaction {
   plaidID         String?     @unique
   bankAccount     BankAccount @relation(fields: [userID, bankAccountName], references: [userId, name])
   bankAccountName String
+  source          String // "plaid" | "user"
+  pending         Boolean
+  linked          Boolean     @default(false)
+}
+
+// Facilitate user renaming of payees
+model Payee {
+  plaidName String @id
+  userID    String
+  user      User   @relation(fields: [userID], references: [id])
+  name      String
 }
 
 model Envelope {
   name         String
-  transactions Transaction[]
+  Transactions Transaction[]
   goals        Goal[]
   allocated    Allocated[]
   userID       String
@@ -114,6 +125,7 @@ model User {
   allocated     Allocated[]
   plaidItems    PlaidItem[]
   BankAccount   BankAccount[]
+  Payee         Payee[]
 }
 
 model VerificationToken {

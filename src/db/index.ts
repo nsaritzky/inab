@@ -43,7 +43,7 @@ export const getEnvelopesWithGoals = async (userID: string) => {
 export const envelopeSums = async (
   userEmail: string,
   month: number,
-  year: number
+  year: number,
 ) => {
   const startOfMonth = new Date(`${year}-${month}-01`)
   await db.transaction.groupBy({
@@ -92,7 +92,7 @@ export const setAllocation = async (
   userID: string,
   envelopeName: string,
   monthIndex: number,
-  amount: number
+  amount: number,
 ) => {
   await db.allocated.upsert({
     where: {
@@ -117,7 +117,9 @@ export const setAllocation = async (
 }
 
 export const saveTransactionFn = async (
-  txn: Prisma.TransactionCreateInput & { id?: number }
+  txn:
+    | Prisma.TransactionCreateInput
+    | (Prisma.TransactionUpdateInput & { id: number }),
 ) => {
   if (txn.id) {
     await db.transaction.update({
@@ -131,8 +133,23 @@ export const saveTransactionFn = async (
     })
 }
 
+export const saveNewTransactionFn = async (
+  txn: Prisma.TransactionCreateInput,
+) => {
+  await db.transaction.create({ data: { ...txn }, include: { envelope: true } })
+}
+
+export const editTransactionFn = async (
+  txn: Prisma.TransactionUpdateInput & { id: number },
+) => {
+  await db.transaction.update({
+    where: { id: txn.id },
+    data: { ...txn, id: undefined },
+  })
+}
+
 export const addTransactions = async (
-  txns: Prisma.TransactionCreateInput[]
+  txns: Prisma.TransactionCreateInput[],
 ) => {
   for (const txn of txns) {
     await db.transaction.create({ data: txn })
@@ -150,7 +167,15 @@ export const updateCursor = async (itemId: string, cursor: string) => {
   })
 }
 
-export const updateTransactionFn = async (txn: Transaction) => {
+export const updateTransactionFn = async (txn: {
+  id: number
+  amount: number
+  envelopeName: string | undefined
+  date: Date
+  payee: string | undefined
+  description: string | undefined
+  bankAccountName: string
+}) => {
   await db.transaction.update({ where: { id: txn.id }, data: txn })
 }
 
@@ -180,6 +205,15 @@ export const deleteGoalFn = async (envelopeName: string, userID: string) => {
   })
 }
 
+export const getAccessToken = async (accountId: string) => {
+  const account = await db.plaidItem.findUnique({
+    where: {
+      id: accountId,
+    },
+  })
+  return account?.accessToken
+}
+
 export const getAccountNames = async (userId: string) => {
   const accounts = await db.bankAccount.findMany({
     where: {
@@ -196,7 +230,7 @@ export const savePlaidItemFn = async (
   accessToken: string,
   itemId: string,
   userId: string,
-  accts: AccountBase[]
+  accts: AccountBase[],
 ) => {
   await db.$transaction([
     db.plaidItem.create({
