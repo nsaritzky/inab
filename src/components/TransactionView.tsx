@@ -6,31 +6,34 @@ import {
   createMemo,
   Component,
   createEffect,
+  Suspense,
 } from "solid-js"
 import { A } from "solid-start"
 import { TransactionForm } from "~/components/transactionForm"
 import { TransactionRow } from "~/components/transactionRow"
-import { AiOutlinePlusCircle } from "solid-icons/ai"
+import { AiOutlineLoading, AiOutlinePlusCircle } from "solid-icons/ai"
 import { sort } from "@solid-primitives/signal-builders"
 import {
   addTransactions,
   getAccountNames,
   getEnvelopes,
   getTransactions,
+  getUserById,
   getUserFromEmail,
   updateCursor,
 } from "~/db"
 import { compareAsc, compareDesc } from "date-fns"
-import { createServerAction$ } from "solid-start/server"
+import { createServerAction$, redirect } from "solid-start/server"
 import { coerceToDate } from "~/utilities"
 import { syncTransactions } from "~/server/transactionSync"
 import { getUser } from "~/server/getUser"
-import { TransactionsRouteData } from "~/routes/transactions"
+import { type TransactionsRouteData } from "~/routes/app/transactions"
 import { Pagination, Dialog } from "@kobalte/core"
 import FilterBar from "./FilterBar"
 import { createStore, reconcile } from "solid-js/store"
 import Fuse from "fuse.js"
 import Checkbox from "./Checkbox"
+import { auth } from "~/auth/lucia"
 
 const ITEMS_PER_PAGE = 50
 
@@ -75,14 +78,14 @@ export const TransactionView: Component<TransactionViewProps> = (props) => {
   const data = createMemo(() =>
     props.rawData
       ? {
-        ...props.rawData!,
-        transactions: props
-          .rawData!.transactions.map((t) => ({
-            ...t,
-            date: coerceToDate(t.date),
-          }))
-          .sort((t1, t2) => compareDesc(t1.date, t2.date)),
-      }
+          ...props.rawData,
+          transactions: props.rawData.transactions
+            .map((t) => ({
+              ...t,
+              date: coerceToDate(t.date),
+            }))
+            .sort((t1, t2) => compareDesc(t1.date, t2.date)),
+        }
       : undefined,
   )
 
@@ -128,7 +131,7 @@ export const TransactionView: Component<TransactionViewProps> = (props) => {
   const filteredTransactions1 = createMemo(() =>
     filters.searchQuery == ""
       ? txns.map((txn) => ({ item: txn, score: 0 }))
-      : fuse?.search(filters.searchQuery),
+      : fuse.search(filters.searchQuery),
   )
 
   const filteredTransactionsFinal = createMemo(
@@ -187,7 +190,12 @@ export const TransactionView: Component<TransactionViewProps> = (props) => {
   )
 
   const [_syncing, sync] = createServerAction$(async (_, event) => {
-    const user = await getUser(event.request)
+    const authRequest = auth.handleRequest(event.request)
+    const session = await authRequest.validate()
+    if (!session) {
+      throw redirect("login")
+    }
+    const user = await getUserById(session.user.userId)
     for (const item of user?.plaidItems || []) {
       if ((await syncTransactions(item)) === "ITEM_LOGIN_REQUIRED") {
         return item.id
@@ -215,9 +223,9 @@ export const TransactionView: Component<TransactionViewProps> = (props) => {
 
   let paginationRef: HTMLElement | undefined
   return (
-    <div class="ml-64 w-auto">
+    <div class="w-auto">
       {" "}
-      <div class="ml-4 mt-4 text-sm">
+      <div class="ml-4 mt-4 pt-4 text-sm">
         <ErrorModal />
         <FilterBar filters={filters} setFilters={setFilters} />
         <button
@@ -230,7 +238,7 @@ export const TransactionView: Component<TransactionViewProps> = (props) => {
             <AiOutlinePlusCircle size={24} /> Add transaction
           </div>
         </button>
-        <Show when={data()}>
+        <Suspense fallback={<AiOutlineLoading />}>
           <div
             class="table table-fixed divide-y w-full"
             role="table"
@@ -252,7 +260,7 @@ export const TransactionView: Component<TransactionViewProps> = (props) => {
             <Show when={editingNewTransaction()}>
               <TransactionForm
                 accountNames={data()!.accountNames}
-                userID={data()!.userId}
+                userID={data()!.user.id}
                 setEditingNewTransaction={setEditingNewTransaction}
                 deactivate={() => setEditingNewTransaction(false)}
                 envelopeList={envelopeNames()}
@@ -264,7 +272,7 @@ export const TransactionView: Component<TransactionViewProps> = (props) => {
                 return (
                   <TransactionRow
                     accountNames={data()!.accountNames}
-                    userID={data()!.userId}
+                    userID={data()!.user.id}
                     checked={txn.checked}
                     setChecked={setChecked(txn.id)}
                     txn={txn}
@@ -291,7 +299,7 @@ export const TransactionView: Component<TransactionViewProps> = (props) => {
               }}
               itemComponent={(props) => (
                 <Pagination.Item
-                  class="px-2 py-1 mx-1 border rounded ui-current:bg-blue-600 ui-current:text-white"
+                  class="px-2 py-1 mx-1 border rounded ui-current:bg-sky-600 ui-current:text-white"
                   page={props.page}
                 >
                   {props.page}
@@ -312,12 +320,7 @@ export const TransactionView: Component<TransactionViewProps> = (props) => {
               </Pagination.Next>
             </Pagination.Root>
           </Show>
-          {/* <Pagination
-            currentPage={currentPage()}
-            totalPages={Math.ceil(data()!.transactions.length / itemsPerPage)}
-            onPageChange={setCurrentPage}
-          /> */}
-        </Show>
+        </Suspense>
       </div>
     </div>
   )

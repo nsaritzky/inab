@@ -14,10 +14,31 @@ import {
 import { Sidebar } from "./components/sidebar"
 import "./root.css"
 import { useCentralStore } from "./store"
-import { SessionProvider } from "@solid-auth/base/client"
 import CentralStoreContext from "./CentralStoreContext"
+import {
+  createServerData$,
+  createServerAction$,
+  redirect,
+} from "solid-start/server"
+import { auth } from "./auth/lucia"
 
 export default function Root() {
+  const user = createServerData$(async (_, event) => {
+    const authRequest = auth.handleRequest(event.request)
+    const session = await authRequest.validate()
+    return session?.user
+  })
+
+  const [_, { Form }] = createServerAction$(async (_, event) => {
+    const authRequest = auth.handleRequest(event.request)
+    const session = await authRequest.validate()
+    if (!session) {
+      return redirect("/login")
+    }
+    await auth.invalidateSession(session.sessionId)
+    return redirect("/")
+  })
+
   const ctx = useCentralStore()
   const location = useLocation()
   /* const active = (path: string) =>
@@ -32,17 +53,28 @@ export default function Root() {
         <Meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <Body>
-        <Suspense>
-          <SessionProvider>
-            <Sidebar />
-            <CentralStoreContext.Provider value={ctx}>
-              <Routes>
-                <FileRoutes />
-              </Routes>
-            </CentralStoreContext.Provider>
-            <Scripts />
-          </SessionProvider>
-        </Suspense>
+        <nav class="flex justify-between p-2 fixed left-0 top-0 box-border w-full bg-sky-300 h-12">
+          <div>Hello</div>
+          <Suspense>
+            <Form>
+              <button
+                class={`px-2 py-1 rounded ${
+                  user() ? "bg-red-300" : "bg-blue-600"
+                }`}
+              >
+                {user() ? "Sign out" : "Sign in"}
+              </button>
+            </Form>
+          </Suspense>
+        </nav>
+        <CentralStoreContext.Provider value={ctx}>
+          <div class="mt-12">
+            <Routes>
+              <FileRoutes />
+            </Routes>
+          </div>
+        </CentralStoreContext.Provider>
+        <Scripts />
       </Body>
     </Html>
   )

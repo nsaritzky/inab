@@ -15,6 +15,14 @@ export const getUserFromEmail = async (email: string) =>
     },
   })
 
+export const getUserById = async (userId: string) =>
+  await db.user.findUniqueOrThrow({
+    where: { id: userId },
+    include: {
+      plaidItems: true,
+    },
+  })
+
 export const getTransactions = async (userID: string) =>
   await db.transaction.findMany({
     where: {
@@ -38,6 +46,53 @@ export const getEnvelopesWithGoals = async (userID: string) => {
     },
   })
   return es
+}
+
+export const getEmailVerificationToken = async (token: string) => {
+  return await db.emailVerification.findUniqueOrThrow({
+    where: {
+      id: token,
+    },
+  })
+}
+
+export const deleteEmailVerificationTokens = async (userId: string) => {}
+
+export const getEmailVerificationTokens = async (userId: string) => {
+  return await db.emailVerification.findMany({
+    where: {
+      userId,
+    },
+  })
+}
+
+export const makeEmailVerificationToken = async (
+  userId: string,
+  token: string,
+  expires: number,
+) => {
+  await db.emailVerification.create({
+    data: {
+      id: token,
+      userId,
+      expires: new Date(Date.now() + expires),
+    },
+  })
+}
+
+export const verifyEmailToken = async (userId: string, token: string) => {
+  db.$transaction([
+    db.emailVerification.findUnique({
+      where: {
+        id: token,
+      },
+    }),
+    db.emailVerification.deleteMany({
+      where: {
+        userId,
+      },
+    }),
+  ])
 }
 
 export const envelopeSums = async (

@@ -103,29 +103,49 @@ model Account {
   @@unique([provider, providerAccountId])
 }
 
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+model User {
+  id                String              @id @unique
+  auth_session      Session[]
+  key               Key[]
+  name              String?
+  email             String              @unique
+  emailVerified     Boolean             @default(false)
+  image             String?
+  accounts          Account[]
+  transactions      Transaction[]
+  envelopes         Envelope[]
+  goals             Goal[]
+  allocated         Allocated[]
+  plaidItems        PlaidItem[]
+  BankAccount       BankAccount[]
+  Payee             Payee[]
+  emailVerification EmailVerification[]
 }
 
-model User {
-  id            String        @id @default(cuid())
-  name          String?
-  email         String        @unique
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  transactions  Transaction[]
-  envelopes     Envelope[]
-  goals         Goal[]
-  allocated     Allocated[]
-  plaidItems    PlaidItem[]
-  BankAccount   BankAccount[]
-  Payee         Payee[]
+model EmailVerification {
+  id      String   @id
+  expires DateTime
+  userId  String
+  user    User     @relation(references: [id], fields: [userId], onDelete: Cascade)
+}
+
+model Session {
+  id             String @id @unique
+  user_id        String
+  active_expires BigInt
+  idle_expires   BigInt
+  user           User   @relation(references: [id], fields: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
+}
+
+model Key {
+  id              String  @id @unique
+  hashed_password String?
+  user_id         String
+  user            User    @relation(references: [id], fields: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
 }
 
 model VerificationToken {

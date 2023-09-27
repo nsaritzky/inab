@@ -12,7 +12,7 @@ export const Sidebar = () => {
   const location = useLocation()
 
   const NavButton: ParentComponent<navButtonProps> = (props) => (
-    <A href={`/${props.panel}`}>
+    <A href={`/app/${props.panel}`}>
       <button
         class={`mx-4 my-2 p-2 font-bold ${
           location.pathname.slice(1) == props.panel

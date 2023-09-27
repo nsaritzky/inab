@@ -1,28 +1,46 @@
 import { getSession } from "@solid-auth/base"
-import { signIn } from "@solid-auth/base/client"
-import { Show } from "solid-js"
-import { A, Navigate, useRouteData } from "solid-start"
-import { createServerData$ } from "solid-start/server"
-import { authOpts } from "./api/auth/[...solidauth]"
+import { Show, Suspense, type JSX } from "solid-js"
+import { A, Navigate, Outlet, useRouteData } from "solid-start"
+import {
+  createServerAction$,
+  createServerData$,
+  redirect,
+} from "solid-start/server"
+import { auth } from "~/auth/lucia"
+
+// export const routeData = () =>
+//   createServerData$(
+//     async (_, event) => {
+//       return await getSession(event.request, authOpts)
+//     },
+//     { key: () => "authUser" },
+//   )
+
+// export const routeData = () => {
+//   return createServerData$(async (_, event) => {
+//     const authRequest = auth.handleRequest(event.request)
+//     const session = await authRequest.validate()
+//     console.log(session)
+//     if (!session) {
+//       console.log("no session")
+//       throw redirect("/login")
+//     }
+//   })
+// }
 
 export const routeData = () =>
-  createServerData$(
-    async (_, event) => {
-      return await getSession(event.request, authOpts)
-    },
-    { key: () => "authUser" }
-  )
+  createServerData$(async (_, event) => {
+    const authRequest = auth.handleRequest(event.request)
+    const session = await authRequest.validate()
+    return session?.user
+  })
 
 export default function Home() {
-  const session = useRouteData<typeof routeData>()
+  const user = useRouteData<typeof routeData>()
+
   return (
-    <main class="mx-auto p-4 text-center text-gray-700">
-      <Show
-        when={session()?.user}
-        fallback={<button onClick={() => signIn("google")}>Sign in</button>}
-      >
-        <Navigate href="/budget" />
-      </Show>
-    </main>
+    <>
+      <main></main>
+    </>
   )
 }

@@ -6,6 +6,7 @@ import {
   createSignal,
   useContext,
   createMemo,
+  Suspense,
 } from "solid-js"
 import MonthSelector from "~/components/monthSelector"
 import CentralStoreContext from "~/CentralStoreContext"
@@ -17,9 +18,9 @@ import { createServerAction$ } from "solid-start/server"
 import { setAllocation } from "../db"
 import { Envelope, Transaction } from "@prisma/client"
 import { coerceToDate, dateToIndex } from "../utilities"
-import { Suspense } from "solid-js"
 import { updateAt } from "../utilities"
-import type { BudgetRouteData } from "~/routes/budget"
+import type { BudgetRouteData } from "~/routes/app/budget"
+import type { AppRouteData } from "~/routes/app"
 
 const ZEROS: number[] = Array(50).fill(0)
 
@@ -34,7 +35,7 @@ const BudgetView: Component<BudgetProps> = (props) => {
   const data = createMemo(() =>
     props.rawData
       ? {
-          envelopes: props.rawData!.envelopes.map((e) => {
+          envelopes: props.rawData.envelopes.map((e) => {
             return {
               ...e,
               goals: e.goals.map((g) => ({
@@ -48,13 +49,13 @@ const BudgetView: Component<BudgetProps> = (props) => {
               ),
             }
           }),
-          transactions: props.rawData!.transactions?.map((txn) => {
+          transactions: props.rawData.transactions.map((txn) => {
             return {
               ...txn,
               date: coerceToDate(txn.date),
             }
           }),
-          user: props.rawData!.user,
+          user: props.rawData.user,
         }
       : undefined,
   )
@@ -66,6 +67,10 @@ const BudgetView: Component<BudgetProps> = (props) => {
       parseInt(form.get("monthIndex") as string),
       parseFloat(form.get("amount") as string),
     )
+  })
+
+  createEffect(() => {
+    console.log(data())
   })
 
   const totalDeposited = () =>
@@ -141,8 +146,8 @@ const BudgetView: Component<BudgetProps> = (props) => {
   })
 
   return (
-    <div class="ml-64">
-      <div class="ml-4 mt-4 h-screen">
+    <>
+      <div class="ml-4 mt-4 pt-4 h-screen">
         <div class="mb-2 flex">
           <MonthSelector />
           <Suspense>
@@ -209,7 +214,7 @@ const BudgetView: Component<BudgetProps> = (props) => {
           </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
 

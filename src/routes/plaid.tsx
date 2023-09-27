@@ -1,15 +1,20 @@
-import { getSession } from "@solid-auth/base"
-import { createEffect, createMemo, createSignal, onMount } from "solid-js"
+import {
+  Suspense,
+  createEffect,
+  createMemo,
+  createSignal,
+  onMount,
+} from "solid-js"
 import { createRouteData, useRouteData, useSearchParams } from "solid-start"
 import {
   createServerAction$,
   createServerData$,
   redirect,
 } from "solid-start/server"
+import { auth } from "~/auth/lucia"
 import { getAccessToken, getUserFromEmail, savePlaidItemFn } from "~/db"
 import type { PlaidLinkOptions, PlaidLinkOnSuccess } from "~/plaid"
 import { createPlaidLink } from "~/plaid/createPlaidLink"
-import { authOpts } from "./api/auth/[...solidauth]"
 import { plaidClient } from "~/server/plaidApi"
 const SANDBOX_URL = "https://sandbox.plaid.com"
 const TOKEN_CREATE_URL = "https://sandbox.plaid.com/link/token/create"
@@ -27,9 +32,12 @@ export const routeData = () => {
   const [searchParams] = useSearchParams()
   return createServerData$(
     async (accountId, event) => {
-      const session = await getSession(event.request, authOpts)
-      const user = session?.user
-      const userId = (await getUserFromEmail(user?.email!))?.id
+      const authRequest = auth.handleRequest(event.request)
+      const session = await authRequest.validate()
+      if (!session) {
+        throw redirect("/login")
+      }
+      const userId = session.user.userId
       // If an accountId is given, then get a Link token in update mode
       if (accountId != "NO_ID") {
         const access_token = await getAccessToken(accountId)
@@ -55,9 +63,6 @@ export const routeData = () => {
 
         return { linkToken: responseData.link_token as string, userId }
       } else {
-        if (!session || !user) {
-          throw redirect("/")
-        }
         const data = {
           client_name: "flite",
           secret: process.env.PLAID_CLIENT_SECRET,
@@ -89,17 +94,25 @@ export const routeData = () => {
   )
 }
 
+// const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+// export const routeData = () =>
+//   createServerData$(async () => {
+//     await sleep(100)
+//     return { linkToken: "babababa" }
+//   })
+
 const PlaidLink = () => {
   const data = useRouteData<typeof routeData>()
   const [searchParams] = useSearchParams()
   const [exchanging, exchange] = createServerAction$(
     async (public_token: string, event) => {
-      const session = await getSession(event.request, authOpts)
-      const user = session?.user
-      if (!session || !user) {
+      const authRequest = auth.handleRequest(event.request)
+      const session = await authRequest.validate()
+      if (!session) {
         throw redirect("/")
       }
-      const userId = (await getUserFromEmail(user?.email!))?.id
+      const userId = session.user.userId
       const response = await fetch(
         `${SANDBOX_URL}/item/public_token/exchange`,
         {
@@ -150,6 +163,10 @@ const PlaidLink = () => {
       <button onClick={() => open()()} disabled={!ready()}>
         Connect
       </button>
+      {/* This hack is needed(?) to make sure that data() updates */}
+      <Suspense>
+        <div class="hidden">{`${data()}`}</div>
+      </Suspense>
     </div>
   )
 }
