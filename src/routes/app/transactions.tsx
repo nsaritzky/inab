@@ -1,12 +1,9 @@
-import { getAccountNames, getEnvelopes, getTransactions } from "~/db"
 import { type RouteDataArgs, useRouteData, createRouteData } from "solid-start"
-import { createServerData$, redirect } from "solid-start/server"
 import { TransactionView } from "~/components/TransactionView"
-import { auth } from "~/auth/lucia"
 import { routeData as appRouteData } from "../app"
 
 export const routeData = ({ data }: RouteDataArgs<typeof appRouteData>) =>
-  createRouteData(() => data())
+  createRouteData(data)
 // createServerData$(async (_, event) => {
 //   const authRequest = auth.handleRequest(event.request)
 //   const session = await authRequest.validate()
@@ -22,11 +19,12 @@ export const routeData = ({ data }: RouteDataArgs<typeof appRouteData>) =>
 // })
 
 export type TransactionsRouteData = ReturnType<
-  ReturnType<typeof useRouteData<typeof routeData>>
+  typeof useRouteData<typeof routeData>
 >
+
 const Transactions = () => {
   const rawData = useRouteData<typeof routeData>()
-  return <TransactionView rawData={rawData()} />
+  return <TransactionView rawData={rawData} />
 }
 
 export default Transactions

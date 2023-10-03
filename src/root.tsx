@@ -11,7 +11,6 @@ import {
   Scripts,
   Title,
 } from "solid-start"
-import { Sidebar } from "./components/sidebar"
 import "./root.css"
 import { useCentralStore } from "./store"
 import CentralStoreContext from "./CentralStoreContext"
@@ -40,7 +39,6 @@ export default function Root() {
   })
 
   const ctx = useCentralStore()
-  const location = useLocation()
   /* const active = (path: string) =>
    *   path == location.pathname
    *     ? "border-sky-600"

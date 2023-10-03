@@ -40,7 +40,7 @@ export interface Envelope {
   goals: Goal[]
 }
 
-export type Panel = "transactions" | "budget"
+export type Panel = "transactions" | "budget" | "accounts"
 
 export interface Store {
   transactions: Transaction[]

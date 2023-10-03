@@ -7,6 +7,7 @@ import {
   useContext,
   createMemo,
   Suspense,
+  onMount,
 } from "solid-js"
 import MonthSelector from "~/components/monthSelector"
 import CentralStoreContext from "~/CentralStoreContext"
@@ -14,13 +15,15 @@ import Unallocated from "~/components/unallocated"
 import { BudgetRow } from "~/components/BudgetRow"
 import { BudgetInspector } from "~/components/BudgetInspector"
 import { useKeyDownEvent } from "@solid-primitives/keyboard"
-import { createServerAction$ } from "solid-start/server"
-import { setAllocation } from "../db"
+import { createServerAction$, redirect } from "solid-start/server"
+import { getUserById, setAllocation } from "../db"
 import { Envelope, Transaction } from "@prisma/client"
 import { coerceToDate, dateToIndex } from "../utilities"
 import { updateAt } from "../utilities"
 import type { BudgetRouteData } from "~/routes/app/budget"
 import type { AppRouteData } from "~/routes/app"
+import { syncTransactions } from "~/server/transactionSync"
+import { auth } from "~/auth/lucia"
 
 const ZEROS: number[] = Array(50).fill(0)
 
@@ -33,32 +36,46 @@ const BudgetView: Component<BudgetProps> = (props) => {
   const [activeEnvelopeName, setActiveEnvelopeName] = createSignal<string>()
   const [editingGoal, setEditingGoal] = createSignal(false)
   const data = createMemo(() =>
-    props.rawData
+    props.rawData()
       ? {
-          envelopes: props.rawData.envelopes.map((e) => {
-            return {
-              ...e,
-              goals: e.goals.map((g) => ({
-                ...g,
-                due: coerceToDate(g.due),
-              })),
-              allocated: e.allocated.reduce(
-                (arr, allocated) =>
-                  updateAt(allocated.monthIndex, allocated.amount)(arr),
-                ZEROS,
-              ),
-            }
-          }),
-          transactions: props.rawData.transactions.map((txn) => {
-            return {
-              ...txn,
-              date: coerceToDate(txn.date),
-            }
-          }),
-          user: props.rawData.user,
+          envelopes: props.rawData()!.envelopes.map((e) => ({
+            ...e,
+            goals: e.goals.map((g) => ({
+              ...g,
+              due: coerceToDate(g.due),
+            })),
+            allocated: e.allocated.reduce(
+              (arr, allocated) =>
+                updateAt(allocated.monthIndex, allocated.amount)(arr),
+              ZEROS,
+            ),
+          })),
+          transactions: props.rawData()!.transactions.map((txn) => ({
+            ...txn,
+            date: coerceToDate(txn.date),
+          })),
+          user: props.rawData()!.user,
         }
       : undefined,
   )
+
+  const [_syncing, sync] = createServerAction$(async (_, event) => {
+    const authRequest = auth.handleRequest(event.request)
+    const session = await authRequest.validate()
+    if (!session) {
+      throw redirect("login")
+    }
+    const user = await getUserById(session.user.userId)
+    for (const item of user?.plaidItems || []) {
+      if ((await syncTransactions(item)) === "ITEM_LOGIN_REQUIRED") {
+        return item.id
+      }
+    }
+  })
+
+  onMount(async () => {
+    await sync()
+  })
 
   const [allocating, allocate] = createServerAction$(async (form: FormData) => {
     await setAllocation(
@@ -67,10 +84,6 @@ const BudgetView: Component<BudgetProps> = (props) => {
       parseInt(form.get("monthIndex") as string),
       parseFloat(form.get("amount") as string),
     )
-  })
-
-  createEffect(() => {
-    console.log(data())
   })
 
   const totalDeposited = () =>

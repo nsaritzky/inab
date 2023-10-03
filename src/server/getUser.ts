@@ -1,6 +1,6 @@
 import { getSession } from "@solid-auth/base"
 import { redirect } from "solid-start"
-import { getUserFromEmail } from "~/db"
+import { getUserByEmail } from "~/db"
 import { authOpts } from "~/routes/api/auth/[...solidauth]"
 
 export const getUser = async (request: Request) => {
@@ -9,5 +9,5 @@ export const getUser = async (request: Request) => {
   if (!session || !user) {
     throw redirect("/")
   }
-  return await getUserFromEmail(user?.email!)
+  return await getUserByEmail(user?.email!)
 }

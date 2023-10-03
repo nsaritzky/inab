@@ -33,6 +33,9 @@ export const Sidebar = () => {
         <li>
           <NavButton panel="transactions">Transactions</NavButton>
         </li>
+        <li>
+          <NavButton panel="accounts">Accounts</NavButton>
+        </li>
       </ul>
     </div>
   )

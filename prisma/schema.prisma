@@ -108,6 +108,7 @@ model User {
   auth_session      Session[]
   key               Key[]
   name              String?
+  username          String?
   email             String              @unique
   emailVerified     Boolean             @default(false)
   image             String?

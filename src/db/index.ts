@@ -7,8 +7,8 @@ import { AccountBase } from "plaid"
 
 const db = new PrismaClient()
 
-export const getUserFromEmail = async (email: string) =>
-  await db.user.findUniqueOrThrow({
+export const getUserByEmail = async (email: string) =>
+  await db.user.findUnique({
     where: { email },
     include: {
       plaidItems: true,
@@ -56,7 +56,13 @@ export const getEmailVerificationToken = async (token: string) => {
   })
 }
 
-export const deleteEmailVerificationTokens = async (userId: string) => {}
+export const deleteEmailVerificationTokens = async (userId: string) => {
+  await db.emailVerification.deleteMany({
+    where: {
+      userId,
+    },
+  })
+}
 
 export const getEmailVerificationTokens = async (userId: string) => {
   return await db.emailVerification.findMany({
@@ -66,16 +72,16 @@ export const getEmailVerificationTokens = async (userId: string) => {
   })
 }
 
-export const makeEmailVerificationToken = async (
+export const saveEmailVerificationToken = async (
   userId: string,
   token: string,
-  expires: number,
+  expiresIn: number,
 ) => {
   await db.emailVerification.create({
     data: {
       id: token,
       userId,
-      expires: new Date(Date.now() + expires),
+      expires: new Date(Date.now() + expiresIn),
     },
   })
 }

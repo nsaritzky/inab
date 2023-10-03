@@ -8,6 +8,8 @@ import {
 import { Prisma } from "@prisma/client"
 import { auth } from "~/auth/lucia"
 import { Show } from "solid-js"
+import { generateEmailVerificationToken } from "~/token"
+import { sendValidationEmail } from "~/email"
 
 export const routeData = () =>
   createServerData$(async (_, event) => {
@@ -49,8 +51,11 @@ const Page = () => {
           },
           attributes: {
             email,
+            emailVerified: false,
           },
         })
+        const token = await generateEmailVerificationToken(user.userId)
+        await sendValidationEmail(user.email, token)
 
         const session = await auth.createSession({
           userId: user.userId,
@@ -132,6 +137,16 @@ const Page = () => {
             />
           </Form>
         </ErrorBoundary>
+        <a
+          href="/auth/google"
+          class="px-2 py-1 bg-slate-50 flex rounded mt-4 outline outline-slate-300"
+        >
+          <img
+            class="mr-2"
+            src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
+          />
+          Sign up with Google
+        </a>
         <div class="mt-4 text-sm text-gray-500">Already have an account?</div>
         <A href="/login">Sign in</A>
       </div>

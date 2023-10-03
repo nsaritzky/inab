@@ -7,6 +7,7 @@ declare global {
     type DatabaseUserAttributes = {
       email: string
       emailVerified: boolean
+      username?: string
     }
     type DatabaseSessionAttributes = {}
   }

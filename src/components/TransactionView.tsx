@@ -19,7 +19,7 @@ import {
   getEnvelopes,
   getTransactions,
   getUserById,
-  getUserFromEmail,
+  getUserByEmail,
   updateCursor,
 } from "~/db"
 import { compareAsc, compareDesc } from "date-fns"
@@ -34,6 +34,8 @@ import { createStore, reconcile } from "solid-js/store"
 import Fuse from "fuse.js"
 import Checkbox from "./Checkbox"
 import { auth } from "~/auth/lucia"
+import { captureStoreUpdates } from "@solid-primitives/deep"
+import SyncErrorModal from "./SyncErrorModal"
 
 const ITEMS_PER_PAGE = 50
 
@@ -52,35 +54,14 @@ export interface Filters {
 const [dialogOpen, setDialogOpen] = createSignal(false)
 const [itemId, setItemId] = createSignal<string>()
 
-const ErrorModal: Component = () => {
-  return (
-    <Dialog.Root open={dialogOpen()} onOpenChange={setDialogOpen} modal>
-      <Dialog.Portal>
-        <Dialog.Overlay class="bg-black/20 inset-0 fixed" />
-        <div class="inset-0 fixed flex justify-center items-center">
-          <Dialog.Content class="bg-white p-4 shadow rounded">
-            <div class="flex justify-between">
-              <Dialog.Title>Hello</Dialog.Title>
-              <Dialog.CloseButton>x</Dialog.CloseButton>
-            </div>
-            <Dialog.Description>
-              The connection to your bank account has expired. Click{" "}
-              <A href={`/plaid?accountId=${itemId()}`}>here</A> to reconnect it.
-            </Dialog.Description>
-          </Dialog.Content>
-        </div>
-      </Dialog.Portal>
-    </Dialog.Root>
-  )
-}
-
 export const TransactionView: Component<TransactionViewProps> = (props) => {
   const data = createMemo(() =>
-    props.rawData
+    props.rawData()
       ? {
-          ...props.rawData,
-          transactions: props.rawData.transactions
-            .map((t) => ({
+          ...props.rawData(),
+          transactions: props
+            .rawData()!
+            .transactions.map((t) => ({
               ...t,
               date: coerceToDate(t.date),
             }))
@@ -101,6 +82,13 @@ export const TransactionView: Component<TransactionViewProps> = (props) => {
       checked: false,
     })) || [],
   )
+
+  const getDelta = captureStoreUpdates(txns)
+  createEffect(() => {
+    const delta = getDelta()
+
+    console.log(delta)
+  })
 
   createEffect(() => {
     setTxns(
@@ -189,22 +177,30 @@ export const TransactionView: Component<TransactionViewProps> = (props) => {
         .slice(startIndex(), endIndex()),
   )
 
-  const [_syncing, sync] = createServerAction$(async (_, event) => {
-    const authRequest = auth.handleRequest(event.request)
-    const session = await authRequest.validate()
-    if (!session) {
-      throw redirect("login")
-    }
-    const user = await getUserById(session.user.userId)
-    for (const item of user?.plaidItems || []) {
-      if ((await syncTransactions(item)) === "ITEM_LOGIN_REQUIRED") {
-        return item.id
-      }
-    }
-  })
+  // const [syncing, sync] = createServerAction$(async (_, event) => {
+  //   const authRequest = auth.handleRequest(event.request)
+  //   const session = await authRequest.validate()
+  //   if (!session) {
+  //     throw redirect("login")
+  //   }
+  //   const user = await getUserById(session.user.userId)
+  //   for (const item of user?.plaidItems || []) {
+  //     if ((await syncTransactions(item)) === "ITEM_LOGIN_REQUIRED") {
+  //       return item.id
+  //     }
+  //   }
+  // })
+
+  // onMount(async () => {
+  //   const id = await sync()
+  //   if (id) {
+  //     setItemId(id)
+  //     setDialogOpen(true)
+  //   }
+  // })
 
   const envelopeNames = createMemo(() =>
-    data()?.envelopes ? data()!.envelopes.map((e) => e.name) : [],
+    data()?.envelopes ? data()!.envelopes!.map((e) => e.name) : [],
   )
 
   const setChecked = (id: number) => (val: boolean) =>
@@ -213,20 +209,11 @@ export const TransactionView: Component<TransactionViewProps> = (props) => {
       (txn) => ({ ...txn, checked: val }),
     )
 
-  onMount(async () => {
-    const id = await sync()
-    if (id) {
-      setItemId(id)
-      setDialogOpen(true)
-    }
-  })
-
   let paginationRef: HTMLElement | undefined
   return (
     <div class="w-auto">
       {" "}
       <div class="ml-4 mt-4 pt-4 text-sm">
-        <ErrorModal />
         <FilterBar filters={filters} setFilters={setFilters} />
         <button
           onClick={(e) => {
@@ -239,6 +226,7 @@ export const TransactionView: Component<TransactionViewProps> = (props) => {
           </div>
         </button>
         <Suspense fallback={<AiOutlineLoading />}>
+          <div>{`${props.rawData()}`}</div>
           <div
             class="table table-fixed divide-y w-full"
             role="table"
@@ -259,8 +247,8 @@ export const TransactionView: Component<TransactionViewProps> = (props) => {
             </div>
             <Show when={editingNewTransaction()}>
               <TransactionForm
-                accountNames={data()!.accountNames}
-                userID={data()!.user.id}
+                accountNames={data()!.accountNames!}
+                userID={data()!.user!.id}
                 setEditingNewTransaction={setEditingNewTransaction}
                 deactivate={() => setEditingNewTransaction(false)}
                 envelopeList={envelopeNames()}
@@ -271,8 +259,8 @@ export const TransactionView: Component<TransactionViewProps> = (props) => {
               {(txn, i) => {
                 return (
                   <TransactionRow
-                    accountNames={data()!.accountNames}
-                    userID={data()!.user.id}
+                    accountNames={data()!.accountNames!}
+                    userID={data()!.user!.id}
                     checked={txn.checked}
                     setChecked={setChecked(txn.id)}
                     txn={txn}

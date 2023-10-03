@@ -1,3 +1,4 @@
+import { Button } from "@kobalte/core"
 import { LuciaError } from "lucia"
 import { createEffect, Show } from "solid-js"
 import { A, useRouteData } from "solid-start"
@@ -61,10 +62,6 @@ const Page = () => {
     },
   )
 
-  createEffect(() => {
-    console.log(enrolling.error.message)
-  })
-
   return (
     <div class="bg-gray-100 min-h-screen flex flex-col items-center">
       <div class="mx-2 w-11/12 mt-12 max-w-sm bg-white p-4 rounded-lg flex flex-col items-center shadow">
@@ -102,6 +99,17 @@ const Page = () => {
             type="submit"
           />
         </Form>
+
+        <a
+          href="/auth/google"
+          class="px-2 py-1 bg-slate-50 flex rounded mt-4 outline outline-slate-300"
+        >
+          <img
+            class="mr-2"
+            src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
+          />
+          Sign in with Google
+        </a>
 
         <div class="mt-4 text-sm text-gray-500">New User?</div>
         <A href="/signup">Sign Up</A>

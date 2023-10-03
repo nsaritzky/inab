@@ -12,12 +12,16 @@ import {
   redirect,
 } from "solid-start/server"
 import { auth } from "~/auth/lucia"
-import { getAccessToken, getUserFromEmail, savePlaidItemFn } from "~/db"
+import { getAccessToken, getUserByEmail, savePlaidItemFn } from "~/db"
 import type { PlaidLinkOptions, PlaidLinkOnSuccess } from "~/plaid"
 import { createPlaidLink } from "~/plaid/createPlaidLink"
 import { plaidClient } from "~/server/plaidApi"
+
+const PLAID_ENV = "development"
+
 const SANDBOX_URL = "https://sandbox.plaid.com"
-const TOKEN_CREATE_URL = "https://sandbox.plaid.com/link/token/create"
+const PLAID_URL = `https://${PLAID_ENV}.plaid.com`
+const TOKEN_CREATE_URL = `https://${PLAID_ENV}.plaid.com/link/token/create`
 /*
  * export const useUser = async (request: Request) => {
  *   const session = await getSession(request, authOpts)
@@ -44,7 +48,7 @@ export const routeData = () => {
         const data = {
           client_name: "flite",
           access_token,
-          secret: process.env.PLAID_CLIENT_SECRET,
+          secret: process.env.PLAID_DEV_SECRET,
           client_id: process.env.PLAID_CLIENT_ID,
           language: "en",
           country_codes: ["US"],
@@ -65,7 +69,7 @@ export const routeData = () => {
       } else {
         const data = {
           client_name: "flite",
-          secret: process.env.PLAID_CLIENT_SECRET,
+          secret: process.env.PLAID_DEV_SECRET,
           client_id: process.env.PLAID_CLIENT_ID,
           language: "en",
           country_codes: ["US"],
@@ -74,16 +78,13 @@ export const routeData = () => {
             client_user_id: userId,
           },
         }
-        const response = await fetch(
-          "https://sandbox.plaid.com/link/token/create",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
+        const response = await fetch(TOKEN_CREATE_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        )
+          body: JSON.stringify(data),
+        })
         const responseData = await response.json()
         return { linkToken: responseData.link_token as string, userId }
       }
@@ -113,20 +114,17 @@ const PlaidLink = () => {
         throw redirect("/")
       }
       const userId = session.user.userId
-      const response = await fetch(
-        `${SANDBOX_URL}/item/public_token/exchange`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            secret: process.env.PLAID_CLIENT_SECRET,
-            client_id: process.env.PLAID_CLIENT_ID,
-            public_token,
-          }),
+      const response = await fetch(`${PLAID_URL}/item/public_token/exchange`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      )
+        body: JSON.stringify({
+          secret: process.env.PLAID_DEV_SECRET,
+          client_id: process.env.PLAID_CLIENT_ID,
+          public_token,
+        }),
+      })
       const responseData = await response.json()
       const accountsResponse = await plaidClient.accountsGet({
         access_token: responseData.access_token,
