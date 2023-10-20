@@ -1,12 +1,7 @@
 import { Accessor, onCleanup } from "solid-js"
 import { MonthYear } from "./types"
-import type { JSX, Signal } from "solid-js"
 import { DAY_ONE } from "./store"
 import { parseISO } from "date-fns"
-import { createServerData$, redirect } from "solid-start/server"
-import { getSession } from "@solid-auth/base"
-import { authOpts } from "./routes/api/auth/[...solidauth]"
-import { getUserFromEmail } from "./db"
 
 export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>
 

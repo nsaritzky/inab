@@ -11,7 +11,6 @@ import type {
 import { v4 as uuid } from "uuid"
 import { createEffect, createMemo } from "solid-js"
 import { dateParser, dateToIndex } from "./utilities"
-import { makePersisted } from "@solid-primitives/storage"
 import {
   closestIndexTo,
   closestTo,

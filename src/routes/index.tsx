@@ -1,11 +1,5 @@
-import { getSession } from "@solid-auth/base"
-import { Show, Suspense, type JSX } from "solid-js"
 import { A, Navigate, Outlet, useRouteData } from "solid-start"
-import {
-  createServerAction$,
-  createServerData$,
-  redirect,
-} from "solid-start/server"
+import { createServerData$ } from "solid-start/server"
 import { auth } from "~/auth/lucia"
 
 // export const routeData = () =>
