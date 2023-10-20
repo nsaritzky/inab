@@ -12,10 +12,7 @@ export default defineConfig({
   //     inline: [/solid-js/, /@solidjs/],
   //   },
   // },
-  plugins: [
-    solid({ adapter: netlify({ edge: true }) }),
-    devtools({ autoname: true }),
-  ],
+  plugins: [solid({ adapter: netlify() }), devtools({ autoname: true })],
   optimizeDeps: {
     exclude: ["@modular-forms/solid"],
   },
