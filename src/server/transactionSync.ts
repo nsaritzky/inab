@@ -5,7 +5,7 @@ import {
   PlaidError,
 } from "plaid"
 import { Prisma, PlaidItem, type Transaction } from "@prisma/client"
-import { addTransactions, updateCursor } from "~/db"
+import { addTransactions, updateCursor, updateTransactions } from "~/db"
 
 type Result<T, E> = { ok: true; content: T } | { ok: false; error: E }
 interface AccountSyncReturn {
@@ -32,6 +32,7 @@ export const bankAccountSync = async (
         access_token,
         cursor: nextCursor,
       })
+      console.log(response)
       const data = response.data
       added = added.concat(data.added)
       modified = modified.concat(data.modified)
@@ -73,7 +74,8 @@ export const mapTransaction = (userID: string) => (txn: PlaidTransaction) =>
       },
     },
     plaidID: txn.transaction_id,
-  }) satisfies Prisma.TransactionCreateInput
+  }) satisfies Prisma.TransactionCreateInput &
+    Prisma.TransactionUpdateInput & { plaidID: string }
 
 export const syncTransactions = async ({
   id: itemId,
@@ -88,5 +90,6 @@ export const syncTransactions = async ({
     const { added, removed, modified, nextCursor } = result
     await updateCursor(itemId, nextCursor!)
     await addTransactions(added.map(mapTransaction(userId)))
+    await updateTransactions(modified.map(mapTransaction(userId)))
   }
 }

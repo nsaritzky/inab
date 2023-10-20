@@ -8,6 +8,7 @@ import {
 import { auth } from "~/auth/lucia"
 import {
   getAccountNames,
+  getBankAccounts,
   getEnvelopesWithGoals,
   getTransactions,
   getUserById,
@@ -27,8 +28,8 @@ export const routeData = () =>
     const dbUser = await getUserById(userId)
     const transactions = await getTransactions(userId)
     const envelopes = await getEnvelopesWithGoals(userId)
-    const accountNames = await getAccountNames(userId)
-    return { transactions, user: dbUser, envelopes, accountNames }
+    const bankAccounts = await getBankAccounts(userId)
+    return { transactions, user: dbUser, envelopes, bankAccounts }
   })
 
 export type AppRouteData = ReturnType<typeof routeData>
@@ -43,7 +44,7 @@ const App = () => {
     const authRequest = auth.handleRequest(event.request)
     const session = await authRequest.validate()
     if (!session) {
-      throw redirect("login")
+      throw redirect("/login")
     }
     const user = await getUserById(session.user.userId)
     for (const item of user?.plaidItems || []) {
@@ -73,7 +74,9 @@ const App = () => {
         <Suspense>
           <div class="hidden">{`${data()}`}</div>
         </Suspense>
-        <Outlet />
+        <Suspense>
+          <Outlet />
+        </Suspense>
       </div>
     </>
   )

@@ -18,9 +18,10 @@ import {
   setValue,
 } from "@modular-forms/solid"
 import { TextField } from "./TextField"
-import { Prisma, Transaction } from "@prisma/client"
+import { Prisma } from "@prisma/client"
 import {
   editTransactionFn,
+  getTransactions,
   saveNewTransactionFn,
   saveTransactionFn,
 } from "~/db"
@@ -29,6 +30,8 @@ import { SelectField } from "./SelectField"
 import { displayUSD } from "~/utilities"
 import CurrencyInput from "solid-currency-input-field"
 import Checkbox from "./Checkbox"
+
+type Transaction = Prisma.PromiseReturnType<typeof getTransactions>[number]
 
 interface AddTransactionFormProps {
   setEditingNewTransaction?: Setter<boolean>
@@ -73,18 +76,21 @@ export const TransactionForm: Component<AddTransactionFormProps> = (
 
   const initialValues: Partial<TransactionForm> = TFormProps.txn
     ? {
-      inflow:
-        TFormProps.txn.amount > 0 ? TFormProps.txn.amount.toString() : "",
-      outflow:
-        TFormProps.txn.amount < 0
-          ? TFormProps.txn.amount.toString().slice(1)
-          : "",
-      date: TFormProps.txn.date.toISOString().split("T")[0],
-      payee: TFormProps.txn.payee || undefined,
-      envelope: TFormProps.txn.envelopeName || undefined,
-      account: TFormProps.txn.bankAccountName || undefined,
-      description: TFormProps.txn.description || undefined,
-    }
+        inflow:
+          TFormProps.txn.amount > 0 ? TFormProps.txn.amount.toString() : "",
+        outflow:
+          TFormProps.txn.amount < 0
+            ? TFormProps.txn.amount.toString().slice(1)
+            : "",
+        date: TFormProps.txn.date.toISOString().split("T")[0],
+        payee: TFormProps.txn.payee || undefined,
+        envelope: TFormProps.txn.envelopeName || undefined,
+        account:
+          TFormProps.txn.bankAccount.userProvidedName ||
+          TFormProps.txn.bankAccountName ||
+          undefined,
+        description: TFormProps.txn.description || undefined,
+      }
     : { date: new Date().toISOString().split("T")[0] }
 
   const [newTransactionForm, { Form, Field }] = createForm<TransactionForm>({
@@ -120,27 +126,27 @@ export const TransactionForm: Component<AddTransactionFormProps> = (
       user: { connect: { id: TFormProps.userID } },
       bankAccount: {
         connect: {
-          userId_name: {
+          userId_userProvidedName: {
             userId: TFormProps.userID!,
-            name: values.account,
+            userProvidedName: values.account,
           },
         },
       },
       envelope: values.envelope
         ? {
-          connectOrCreate: {
-            where: {
-              name_userID: {
+            connectOrCreate: {
+              where: {
+                name_userID: {
+                  name: values.envelope,
+                  userID: TFormProps.userID!,
+                },
+              },
+              create: {
                 name: values.envelope,
                 userID: TFormProps.userID!,
               },
             },
-            create: {
-              name: values.envelope,
-              userID: TFormProps.userID!,
-            },
-          },
-        }
+          }
         : undefined,
       description: values.description,
     }
@@ -158,7 +164,7 @@ export const TransactionForm: Component<AddTransactionFormProps> = (
       aria-label="Edit Transaction"
       id="Edit Transaction"
       class="mt-1 table-row text-xs"
-      use: clickOutside={() => {
+      use:clickOutside={() => {
         console.log("clickOutside")
         TFormProps.setEditingNewTransaction &&
           TFormProps.setEditingNewTransaction(false)

@@ -81,7 +81,7 @@ test("Clicking on a row highlights it", async () => {
   expect(rows[2]).not.toHaveClass("bg-sky-200")
 })
 
-test.skip("The increment and decrement month buttons work", async () => {
+test("The increment and decrement month buttons work", async () => {
   const prevMonth = screen.getByRole("button", { name: "previous month" })
   await userEvent.click(prevMonth)
   const currMonth = screen.getByRole("button", { name: "JAN 2023" })

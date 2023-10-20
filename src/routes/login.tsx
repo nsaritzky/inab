@@ -90,10 +90,15 @@ const Page = () => {
               id="password"
             />
           </div>
+          <A
+            href="/password-reset"
+            class="block text-center mb-4 text-sm text-gray-500"
+          >
+            Forgot your password?
+          </A>
           <Show when={enrolling.error}>
             <div class="text-red-600">{enrolling.error.message}</div>
           </Show>
-          <br />
           <input
             class="w-full p-2 rounded bg-blue-500 text-white cursor-pointer"
             type="submit"

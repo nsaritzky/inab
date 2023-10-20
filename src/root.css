@@ -57,3 +57,18 @@
 }
 
 @tailwind utilities;
+
+/* Width class for the Kobalte progress bar */
+@layer utilities {
+  .w-progress {
+    width: var(--kb-progress-fill-width);
+  }
+
+  .yellow-loading[data-progress="loading"] {
+    @apply bg-yellow-400;
+  }
+
+  .sky-complete[data-progress="complete"] {
+    @apply bg-sky-400;
+  }
+}

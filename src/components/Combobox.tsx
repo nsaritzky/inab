@@ -14,21 +14,21 @@ type ComboProps = {
   class: string | undefined
   placeholder?: string | undefined
   options: string[]
-  value: string | undefined
-  error: string
+  value?: string | undefined
+  error?: string
   required?: boolean | undefined
   disabled?: boolean | undefined
-  ref: (element: HTMLSelectElement) => void
-  onInput: JSX.EventHandler<HTMLSelectElement, InputEvent>
-  onChange: JSX.EventHandler<HTMLSelectElement, Event>
-  onBlur: JSX.EventHandler<HTMLSelectElement, FocusEvent>
+  ref?: (element: HTMLSelectElement) => void
+  onInput?: JSX.EventHandler<HTMLSelectElement, InputEvent>
+  onChange?: JSX.EventHandler<HTMLSelectElement, Event>
+  onBlur?: JSX.EventHandler<HTMLSelectElement, FocusEvent>
 }
 
 export const Combobox = (props: ComboProps) => {
   const [rootProps, inputProps] = splitProps(
     props,
     ["name", "placeholder", "options", "required", "disabled"],
-    ["onInput", "onChange", "onBlur"]
+    ["onInput", "onChange", "onBlur"],
   )
   const [getValue, setValue] = createSignal<string>()
 
@@ -36,7 +36,7 @@ export const Combobox = (props: ComboProps) => {
 
   const onOpenChange = (
     isOpen: boolean,
-    triggerMode?: Kobalte.ComboboxTriggerMode
+    triggerMode?: Kobalte.ComboboxTriggerMode,
   ) => {
     // Show all options on ArrowDown/ArrowUp and button click.
     if (isOpen && triggerMode === "manual") {
@@ -44,9 +44,9 @@ export const Combobox = (props: ComboProps) => {
     }
   }
 
-  const onInputChange = (value: string) => {
-    setOptions(props.options.filter((option) => filter.contains(option, value)))
-  }
+  // const onInputChange = (value: string) => {
+  //   setOptions(props.options.filter((option) => filter.contains(option, value)))
+  // }
 
   const [options, setOptions] = createSignal<string[]>(props.options)
 
@@ -60,7 +60,8 @@ export const Combobox = (props: ComboProps) => {
       multiple={false}
       value={getValue()}
       onChange={setValue}
-      onInputChange={onInputChange}
+      defaultFilter="contains"
+      // onInputChange={onInputChange}
       onOpenChange={onOpenChange}
       validationState={props.error ? "invalid" : "valid"}
       itemComponent={(props) => (
@@ -68,9 +69,7 @@ export const Combobox = (props: ComboProps) => {
           item={props.item}
           class="flex items-center justify-between rounded ui-highlighted:bg-blue-500 ui-highlighted:text-white"
         >
-          <Kobalte.ItemLabel class="ml-2">
-            {props.item.textValue}
-          </Kobalte.ItemLabel>
+          <Kobalte.ItemLabel class="">{props.item.textValue}</Kobalte.ItemLabel>
           <Kobalte.ItemIndicator class="mr-2">
             <FaSolidCheck />
           </Kobalte.ItemIndicator>
@@ -79,7 +78,7 @@ export const Combobox = (props: ComboProps) => {
     >
       <Kobalte.HiddenSelect {...inputProps} />
       <Kobalte.Control>
-        <Kobalte.Trigger class="mx-auto flex w-32 justify-between rounded border px-2 py-1">
+        <Kobalte.Trigger class="mx-auto flex justify-between rounded border py-1">
           <Kobalte.Input />
           <Kobalte.Icon />
         </Kobalte.Trigger>

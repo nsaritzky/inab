@@ -1,20 +1,8 @@
-import { FiChevronLeft, FiChevronRight } from "solid-icons/fi"
-import { MonthYear } from "../types"
-import {
-  Component,
-  Setter,
-  createSignal,
-  useContext as createContext,
-} from "solid-js"
+import { type Component, createSignal, useContext, For } from "solid-js"
 import CentralStoreContext from "~/CentralStoreContext"
 import { Popover, Separator } from "@kobalte/core"
 import { DAY_ONE } from "../store"
-import { For } from "solid-js"
-import { VsClose, VsTriangleDown } from "solid-icons/vs"
-
-interface MonthSelectorProps {
-  activeMonth: MonthYear
-}
+import { ChevronDown, ChevronRight, ChevronLeft, X } from "lucide-solid"
 
 const MONTHS = [
   "JAN",
@@ -40,7 +28,7 @@ interface PopupProps {
   setMonth: (i: number) => void
 }
 
-const MonthPopover = (props: PopupProps) => {
+const MonthPopover: Component<PopupProps> = (props) => {
   const [year, setYear] = createSignal(props.currentYear)
   const toMonthIndex = (month: Month, year: number) =>
     MONTHS.indexOf(month) +
@@ -52,17 +40,17 @@ const MonthPopover = (props: PopupProps) => {
       <div class="flex justify-between">
         <div class="mx-2 flex w-full justify-center">
           <button onClick={() => setYear((y) => y - 1)}>
-            <FiChevronLeft size={24} />
+            <ChevronLeft size={24} />
           </button>
           <div>
             <button>{year()}</button>
           </div>
           <button onClick={() => setYear((y) => y + 1)}>
-            <FiChevronRight size={24} />
+            <ChevronRight size={24} />
           </button>
         </div>
         <Popover.CloseButton>
-          <VsClose />
+          <X />
         </Popover.CloseButton>
       </div>
       <Separator.Root orientation="horizontal" class="h-1 w-full" />
@@ -90,7 +78,7 @@ const MonthPopover = (props: PopupProps) => {
 
 const MonthSelector: Component = () => {
   const [state, { setDecMonth, setIncMonth, setMonth }] =
-    createContext(CentralStoreContext)!
+    useContext(CentralStoreContext)!
   const activeMonth = () => MONTHS[state.activeMonth % 12]
   const currentYear = () =>
     DAY_ONE.getFullYear() + Math.floor(state.activeMonth / 12)
@@ -104,13 +92,13 @@ const MonthSelector: Component = () => {
           setDecMonth()
         }}
       >
-        <FiChevronLeft size={24} />
+        <ChevronLeft size={24} />
       </button>
       <Popover.Root>
         <Popover.Trigger>
           <div class="flex items-center">
             <div class="w-20">{`${activeMonth()} ${currentYear()}`}</div>
-            <VsTriangleDown />
+            <ChevronDown size={24} />
           </div>
         </Popover.Trigger>
         <Popover.Portal>
@@ -137,7 +125,7 @@ const MonthSelector: Component = () => {
           setIncMonth()
         }}
       >
-        <FiChevronRight size={24} />
+        <ChevronRight size={24} />
       </button>
     </div>
   )

@@ -21,14 +21,13 @@ import { Envelope, Transaction } from "@prisma/client"
 import { coerceToDate, dateToIndex } from "../utilities"
 import { updateAt } from "../utilities"
 import type { BudgetRouteData } from "~/routes/app/budget"
-import type { AppRouteData } from "~/routes/app"
 import { syncTransactions } from "~/server/transactionSync"
 import { auth } from "~/auth/lucia"
 
 const ZEROS: number[] = Array(50).fill(0)
 
 interface BudgetProps {
-  rawData: BudgetRouteData
+  rawData: ReturnType<BudgetRouteData>
 }
 
 const BudgetView: Component<BudgetProps> = (props) => {
@@ -36,9 +35,9 @@ const BudgetView: Component<BudgetProps> = (props) => {
   const [activeEnvelopeName, setActiveEnvelopeName] = createSignal<string>()
   const [editingGoal, setEditingGoal] = createSignal(false)
   const data = createMemo(() =>
-    props.rawData()
+    props.rawData
       ? {
-          envelopes: props.rawData()!.envelopes.map((e) => ({
+          envelopes: props.rawData.envelopes.map((e) => ({
             ...e,
             goals: e.goals.map((g) => ({
               ...g,
@@ -50,11 +49,11 @@ const BudgetView: Component<BudgetProps> = (props) => {
               ZEROS,
             ),
           })),
-          transactions: props.rawData()!.transactions.map((txn) => ({
+          transactions: props.rawData.transactions.map((txn) => ({
             ...txn,
             date: coerceToDate(txn.date),
           })),
-          user: props.rawData()!.user,
+          user: props.rawData.user,
         }
       : undefined,
   )
@@ -164,7 +163,12 @@ const BudgetView: Component<BudgetProps> = (props) => {
         <div class="mb-2 flex">
           <MonthSelector />
           <Suspense>
-            <Unallocated unallocated={unallocated()} />
+            <Unallocated
+              unallocated={unallocated()}
+              envelopeNames={data()!.envelopes.map((e) => e.name)}
+              userID={data()!.user.id}
+              monthIndex={state.activeMonth}
+            />
           </Suspense>
           <div class="flex-1"></div>
         </div>
@@ -184,6 +188,7 @@ const BudgetView: Component<BudgetProps> = (props) => {
                   <For each={envelopes()}>
                     {(envlp) => (
                       <BudgetRow
+                        name={envlp.name}
                         name={envlp.name}
                         envelope={envlp}
                         Form={allocate.Form}

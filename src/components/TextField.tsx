@@ -10,6 +10,7 @@ type TextFieldProps = {
   class?: string
   inputClass?: string
   placeholder?: string | undefined
+  defaultValue?: string
   value: string | undefined
   error: string
   multiline?: boolean | undefined
@@ -24,8 +25,8 @@ type TextFieldProps = {
 export function TextField(props: TextFieldProps) {
   const [rootProps, inputProps] = splitProps(
     props,
-    ["name", "class", "value", "required", "disabled"],
-    ["aria-label", "placeholder", "ref", "onInput", "onChange", "onBlur"]
+    ["name", "class", "defaultValue", "value", "required", "disabled"],
+    ["ariaLabel", "placeholder", "ref", "onInput", "onChange", "onBlur"],
   )
   return (
     <Kobalte.Root

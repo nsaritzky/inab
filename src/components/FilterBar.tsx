@@ -4,7 +4,7 @@ import { Checkbox, TextField, Button } from "@kobalte/core"
 import type { Filters } from "./TransactionView"
 import { SetStoreFunction, reconcile } from "solid-js/store"
 import CurrencyInput from "solid-currency-input-field"
-import { VsListFilter } from "solid-icons/vs"
+import { ListFilter } from "lucide-solid"
 
 interface Props {
   filters: Filters
@@ -18,7 +18,7 @@ const [showing, setShowing] = createSignal(false)
 const FallbackButton = () => (
   <Button.Root onClick={() => setShowing(true)}>
     <div class="flex items-center">
-      <VsListFilter class="mr-2" />
+      <ListFilter class="mr-2" />
       Filter
     </div>
   </Button.Root>
@@ -79,6 +79,7 @@ const FilterBar: Component<Props> = (props) => {
             decimalScale={2}
             prefix="$"
             type="text"
+            id="minAmount"
             name="minAmount"
             value={minValue()}
             onValueChange={(val, _, vals) => {
@@ -93,6 +94,7 @@ const FilterBar: Component<Props> = (props) => {
             decimalScale={2}
             prefix="$"
             type="text"
+            id="maxAmount"
             name="maxAmount"
             value={maxValue()}
             onValueChange={(val, _, vals) => {
@@ -115,7 +117,7 @@ const FilterBar: Component<Props> = (props) => {
           </Button.Root>
         </div>
         <Button.Root
-          title="Close Filter Bar"
+          aria-label="Close Filter Bar"
           class="self-start"
           onClick={() => setShowing(false)}
         >

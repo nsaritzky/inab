@@ -4,10 +4,12 @@ import {
   createSignal,
   useContext,
   ParentComponent,
+  createEffect,
 } from "solid-js"
 import type { Envelope, Goal, Transaction } from "@prisma/client"
 import CentralStoreContext from "~/CentralStoreContext"
 import { Show } from "solid-js"
+import { Progress } from "@kobalte/core"
 import { FormProps } from "solid-start"
 import { dateToIndex } from "~/utilities"
 import CurrencyInput from "solid-currency-input-field"
@@ -59,79 +61,103 @@ export const BudgetRow = (props: BudgetRowProps) => {
         .reduce((a, b) => a + b, 0),
     )
 
+  const allocatedThisMonth = () => props.envelope.allocated[state.activeMonth]
+  const goalAmount = () => props.envelope.goals[0]?.amount
+
   return (
-    <tr
-      class={`${props.active && "bg-sky-200"} group rounded p-2`}
-      onClick={(e) => {
-        e.preventDefault()
-        props.activate()
-        inputRef.focus()
-        inputRef.select()
-      }}
-    >
-      <td>{props.name}</td>
-      <td>
-        <Show
-          when={props.active}
-          fallback={
-            <div class="mr-2 py-1">
-              <div
-                class={`rounded outline-2 outline-blue-500 group-hover:outline`}
-              >
-                {props.envelope.allocated[state.activeMonth].toLocaleString(
-                  "en-us",
-                  {
-                    style: "currency",
-                    currency: "USD",
-                  },
-                )}
+    <>
+      <tr
+        class={`${props.active && "bg-sky-200"} group rounded p-2`}
+        onClick={(e) => {
+          e.preventDefault()
+          props.activate()
+          inputRef.focus()
+          inputRef.select()
+        }}
+      >
+        <td>{props.name}</td>
+        <td>
+          <Show
+            when={props.active}
+            fallback={
+              <div class="mr-2 py-1">
+                <div
+                  class={`rounded outline-2 outline-blue-500 group-hover:outline`}
+                >
+                  {props.envelope.allocated[state.activeMonth].toLocaleString(
+                    "en-us",
+                    {
+                      style: "currency",
+                      currency: "USD",
+                    },
+                  )}
+                </div>
               </div>
+            }
+          >
+            <div class="mr-2 py-1">
+              <props.Form
+                name="allocate"
+                onSubmit={(e) => {
+                  props.deactivate()
+                }}
+              >
+                <CurrencyInput
+                  type="text"
+                  class=" w-full rounded"
+                  name="amountInput"
+                  decimalScale={2}
+                  groupSeparator=","
+                  decimalSeparator="."
+                  intlConfig={{ locale: "en-US", currency: "USD" }}
+                  onValueChange={(value) => setValue(value)}
+                  defaultValue={props.envelope.allocated[state.activeMonth]}
+                  ref={inputRef!}
+                />
+                <input type="hidden" name="envelopeName" value={props.name} />
+                <input
+                  type="hidden"
+                  name="monthIndex"
+                  value={state.activeMonth}
+                />
+                <input type="hidden" name="userID" value={props.userID} />
+                <input type="hidden" name="amount" value={value()} />
+              </props.Form>
             </div>
-          }
-        >
-          <div class="mr-2 py-1">
-            <props.Form
-              name="allocate"
-              onSubmit={(e) => {
-                props.deactivate()
-              }}
-            >
-              <CurrencyInput
-                type="text"
-                class=" w-full rounded"
-                name="amountInput"
-                decimalScale={2}
-                groupSeparator=","
-                decimalSeparator="."
-                intlConfig={{ locale: "en-US", currency: "USD" }}
-                onValueChange={(value) => setValue(value)}
-                defaultValue={props.envelope.allocated[state.activeMonth]}
-                ref={inputRef!}
+          </Show>
+        </td>
+        <td>
+          {activity().toLocaleString("en-us", {
+            style: "currency",
+            currency: "USD",
+          })}
+        </td>
+        <td>
+          {netBalances()[state.activeMonth].toLocaleString("en-us", {
+            style: "currency",
+            currency: "USD",
+          })}
+        </td>
+      </tr>
+      <tr>
+        <td colspan="4">
+          <Progress.Root
+            class="w-full"
+            value={allocatedThisMonth()}
+            maxValue={goalAmount()}
+          >
+            <Progress.Track class="h-1">
+              <Progress.Fill
+                class={`h-full w-progress ${
+                  goalAmount()
+                    ? "ui-loading:bg-yellow-400 ui-complete:bg-sky-500"
+                    : ""
+                }`}
               />
-              <input type="hidden" name="envelopeName" value={props.name} />
-              <input
-                type="hidden"
-                name="monthIndex"
-                value={state.activeMonth}
-              />
-              <input type="hidden" name="userID" value={props.userID} />
-              <input type="hidden" name="amount" value={value()} />
-            </props.Form>
-          </div>
-        </Show>
-      </td>
-      <td>
-        {activity().toLocaleString("en-us", {
-          style: "currency",
-          currency: "USD",
-        })}
-      </td>
-      <td>
-        {netBalances()[state.activeMonth].toLocaleString("en-us", {
-          style: "currency",
-          currency: "USD",
-        })}
-      </td>
-    </tr>
+            </Progress.Track>
+          </Progress.Root>
+        </td>
+      </tr>
+    </>
   )
 }

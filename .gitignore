@@ -7,3 +7,6 @@ dist
 /.env
 /prisma/dev.db
 /prisma/dev.db-journal
+/.env.test
+/prisma/test.db
+/prisma/test.db-journal

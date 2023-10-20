@@ -2,51 +2,36 @@ import {
   For,
   Show,
   createSignal,
-  onMount,
   createMemo,
   Component,
   createEffect,
   Suspense,
 } from "solid-js"
-import { A } from "solid-start"
 import { TransactionForm } from "~/components/transactionForm"
 import { TransactionRow } from "~/components/transactionRow"
-import { AiOutlineLoading, AiOutlinePlusCircle } from "solid-icons/ai"
-import { sort } from "@solid-primitives/signal-builders"
-import {
-  addTransactions,
-  getAccountNames,
-  getEnvelopes,
-  getTransactions,
-  getUserById,
-  getUserByEmail,
-  updateCursor,
-} from "~/db"
-import { compareAsc, compareDesc } from "date-fns"
-import { createServerAction$, redirect } from "solid-start/server"
-import { coerceToDate } from "~/utilities"
-import { syncTransactions } from "~/server/transactionSync"
-import { getUser } from "~/server/getUser"
+import { PlusCircle, Loader2 } from "lucide-solid"
+import { filter, sort } from "@solid-primitives/signal-builders"
+import { compareDesc } from "date-fns"
 import { type TransactionsRouteData } from "~/routes/app/transactions"
-import { Pagination, Dialog } from "@kobalte/core"
+import { Pagination } from "@kobalte/core"
 import FilterBar from "./FilterBar"
-import { createStore, reconcile } from "solid-js/store"
+import { createStore, reconcile, unwrap } from "solid-js/store"
 import Fuse from "fuse.js"
 import Checkbox from "./Checkbox"
-import { auth } from "~/auth/lucia"
-import { captureStoreUpdates } from "@solid-primitives/deep"
-import SyncErrorModal from "./SyncErrorModal"
+import { useLocation, useSearchParams } from "solid-start"
+import { coerceToDate } from "~/utilities"
 
 const ITEMS_PER_PAGE = 50
 
 interface TransactionViewProps {
-  rawData: TransactionsRouteData
+  rawData: ReturnType<TransactionsRouteData>
 }
 
 export interface Filters {
   inflow: boolean
   outflow: boolean
   searchQuery: string
+  bankAccount?: string
   minAmount?: number
   maxAmount?: number
 }
@@ -56,12 +41,11 @@ const [itemId, setItemId] = createSignal<string>()
 
 export const TransactionView: Component<TransactionViewProps> = (props) => {
   const data = createMemo(() =>
-    props.rawData()
+    props.rawData
       ? {
-          ...props.rawData(),
-          transactions: props
-            .rawData()!
-            .transactions.map((t) => ({
+          ...props.rawData,
+          transactions: props.rawData.transactions
+            .map((t) => ({
               ...t,
               date: coerceToDate(t.date),
             }))
@@ -69,6 +53,32 @@ export const TransactionView: Component<TransactionViewProps> = (props) => {
         }
       : undefined,
   )
+
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  // createEffect(() => {
+  //   setSearchParams({
+  //     inflow: `${filters.inflow}`,
+  //     outflow: `${filters.outflow}`,
+  //     searchQuery: `${filters.searchQuery}`,
+  //     bankAccount: `${filters.bankAccount}`,
+  //     minAmount: `${filters.minAmount}`,
+  //     maxAmount: `${filters.maxAmount}`,
+  //   })
+  // })
+
+  // createEffect(() => {
+  //   setFilters(
+  //     reconcile({
+  //       inflow: Boolean(searchParams.inflow),
+  //       outflow: Boolean(searchParams.outflow),
+  //       searchQuery: searchParams.searchQuery,
+  //       bankAccount: searchParams.bankAccount,
+  //       minAmount: parseFloat(searchParams.minAmount),
+  //       maxAmount: parseFloat(searchParams.maxAmount),
+  //     }),
+  //   )
+  // })
 
   const [filters, setFilters] = createStore<Filters>({
     inflow: true,
@@ -83,13 +93,6 @@ export const TransactionView: Component<TransactionViewProps> = (props) => {
     })) || [],
   )
 
-  const getDelta = captureStoreUpdates(txns)
-  createEffect(() => {
-    const delta = getDelta()
-
-    console.log(delta)
-  })
-
   createEffect(() => {
     setTxns(
       reconcile(
@@ -97,13 +100,6 @@ export const TransactionView: Component<TransactionViewProps> = (props) => {
       ),
     )
   })
-
-  const filteredTransactions = createMemo(
-    () =>
-      data()
-        ?.transactions.filter((txn) => txn.amount < 0 || filters.inflow)
-        .filter((txn) => txn.amount > 0 || filters.outflow),
-  )
 
   const fuseOptions: Fuse.IFuseOptions<{}> = {
     includeScore: true,
@@ -118,25 +114,32 @@ export const TransactionView: Component<TransactionViewProps> = (props) => {
 
   const filteredTransactions1 = createMemo(() =>
     filters.searchQuery == ""
-      ? txns.map((txn) => ({ item: txn, score: 0 }))
+      ? txns.map((txn) => ({ item: txn }))
       : fuse.search(filters.searchQuery),
   )
 
-  const filteredTransactionsFinal = createMemo(
-    () =>
-      filteredTransactions1()
-        ?.filter((res) => res.item.amount < 0 || filters.inflow)
-        .filter((res) => res.item.amount > 0 || filters.outflow)
-        .filter(
-          (res) =>
-            !filters.minAmount || Math.abs(res.item.amount) > filters.minAmount,
-        )
-        .filter(
-          (res) =>
-            !filters.maxAmount || Math.abs(res.item.amount) < filters.maxAmount,
-        )
-        .sort((a, b) => a.score - b.score),
+  const filteredTransactionsFinal = sort(
+    filter(
+      filteredTransactions1,
+      (res) =>
+        (!searchParams.bankAccount ||
+          res.item.bankAccount.id.toString() == searchParams.bankAccount) &&
+        (res.item.amount < 0 || filters.inflow) &&
+        (res.item.amount > 0 || filters.outflow) &&
+        (!filters.minAmount || Math.abs(res.item.amount) > filters.minAmount) &&
+        (!filters.maxAmount || Math.abs(res.item.amount) < filters.maxAmount),
+    ),
+    (a, b) => a.score - b.score,
   )
+
+  // const filteredTransactionsFinal = createMemo(() =>
+  //   searchParams.bankAccount
+  //     ? filteredTransactions2().filter(
+  //         (item) =>
+  //           item.item.bankAccount.id.toString() === searchParams.bankAccount,
+  //       )
+  //     : filteredTransactions2(),
+  // )
 
   // Uncheck transactions when they're filtered out
   createEffect(() => {
@@ -222,11 +225,10 @@ export const TransactionView: Component<TransactionViewProps> = (props) => {
           }}
         >
           <div class="flex">
-            <AiOutlinePlusCircle size={24} /> Add transaction
+            <PlusCircle size={24} /> Add transaction
           </div>
         </button>
-        <Suspense fallback={<AiOutlineLoading />}>
-          <div>{`${props.rawData()}`}</div>
+        <Suspense fallback={<Loader2 />}>
           <div
             class="table table-fixed divide-y w-full"
             role="table"
@@ -247,8 +249,10 @@ export const TransactionView: Component<TransactionViewProps> = (props) => {
             </div>
             <Show when={editingNewTransaction()}>
               <TransactionForm
-                accountNames={data()!.accountNames!}
-                userID={data()!.user!.id}
+                accountNames={data()!.bankAccounts.map(
+                  (acct) => acct.userProvidedName || acct.name,
+                )}
+                userID={data()!.user.id}
                 setEditingNewTransaction={setEditingNewTransaction}
                 deactivate={() => setEditingNewTransaction(false)}
                 envelopeList={envelopeNames()}
@@ -259,8 +263,8 @@ export const TransactionView: Component<TransactionViewProps> = (props) => {
               {(txn, i) => {
                 return (
                   <TransactionRow
-                    accountNames={data()!.accountNames!}
-                    userID={data()!.user!.id}
+                    accountNames={data()!.bankAccounts.map((acct) => acct.name)}
+                    userID={data()!.user.id}
                     checked={txn.checked}
                     setChecked={setChecked(txn.id)}
                     txn={txn}
@@ -299,11 +303,11 @@ export const TransactionView: Component<TransactionViewProps> = (props) => {
                 </Pagination.Ellipsis>
               )}
             >
-              <Pagination.Previous class="px-2 py-1 mr-1 border rounded">
+              <Pagination.Previous class="px-2 py-1 mr-1 border rounded ui-disabled:text-gray-400">
                 Prev
               </Pagination.Previous>
               <Pagination.List />
-              <Pagination.Next class="px-2 py-1 ml-1 border rounded">
+              <Pagination.Next class="px-2 py-1 ml-1 border rounded ui-disabled:text-gray-400">
                 Next
               </Pagination.Next>
             </Pagination.Root>

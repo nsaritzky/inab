@@ -24,7 +24,7 @@ export type TransactionsRouteData = ReturnType<
 
 const Transactions = () => {
   const rawData = useRouteData<typeof routeData>()
-  return <TransactionView rawData={rawData} />
+  return <TransactionView rawData={rawData()} />
 }
 
 export default Transactions

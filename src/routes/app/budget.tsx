@@ -11,7 +11,7 @@ const Budget = () => {
   const rawData = useRouteData<typeof routeData>()
   return (
     <>
-      <BudgetView rawData={rawData} />
+      <BudgetView rawData={rawData()} />
     </>
   )
 }

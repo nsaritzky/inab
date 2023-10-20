@@ -3,10 +3,13 @@
   "scripts": {
     "dev": "solid-start dev",
     "build": "solid-start build",
-    "start": "solid-start start"
+    "start": "solid-start start",
+    "test:int": "./scripts/run-integration.sh",
+    "test:int:ui": "./scripts/run-integration.sh --ui"
   },
   "type": "module",
   "devDependencies": {
+    "@faker-js/faker": "^8.1.0",
     "@solidjs/testing-library": "^0.8.4",
     "@tailwindcss/forms": "^0.5.4",
     "@testing-library/jest-dom": "^5.16.5",

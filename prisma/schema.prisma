@@ -61,16 +61,19 @@ model Goal {
 }
 
 model BankAccount {
-  id           Int           @id @default(autoincrement())
-  name         String
-  user         User          @relation(fields: [userId], references: [id])
-  userId       String
-  plaidId      String        @unique
-  plaidItem    PlaidItem?    @relation(fields: [plaidItemId], references: [id])
-  plaidItemId  String?
-  transactions Transaction[]
+  id               Int           @id @default(autoincrement())
+  name             String
+  userProvidedName String?
+  user             User          @relation(fields: [userId], references: [id])
+  userId           String
+  plaidId          String        @unique
+  plaidItem        PlaidItem?    @relation(fields: [plaidItemId], references: [id])
+  plaidItemId      String?
+  transactions     Transaction[]
+  creditCard       Boolean       @default(false)
 
   @@unique([userId, name])
+  @@unique([userId, userProvidedName])
 }
 
 model Allocated {
@@ -121,6 +124,7 @@ model User {
   BankAccount       BankAccount[]
   Payee             Payee[]
   emailVerification EmailVerification[]
+  PasswordReset     PasswordReset[]
 }
 
 model EmailVerification {
@@ -128,6 +132,13 @@ model EmailVerification {
   expires DateTime
   userId  String
   user    User     @relation(references: [id], fields: [userId], onDelete: Cascade)
+}
+
+model PasswordReset {
+  id      String @id
+  expires BigInt
+  user    User   @relation(references: [id], fields: [userId], onDelete: Cascade)
+  userId  String
 }
 
 model Session {

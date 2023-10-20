@@ -16,6 +16,8 @@ module.exports = {
       addVariant("data-is-active", `&[data-is-active="true"]`)
       addVariant("data-multiple", `&[data-multiple="true"]`)
       addVariant("mark", "& > mark")
+      addVariant("ui-loading", "&[data-progress='loading']")
+      addVariant("ui-complete", "&[data-progress='complete']")
     }),
     plugin(({ addUtilities }) => {
       addUtilities({

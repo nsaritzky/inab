@@ -12,7 +12,7 @@ import { NewGoalForm } from "./NewGoalForm"
 import { BsPlusCircle } from "solid-icons/bs"
 import { Envelope, Goal, Transaction } from "@prisma/client"
 
-interface BudgetInspectorProps {
+export interface BudgetInspectorProps {
   activeEnvelope: Envelope & {
     transactions: Transaction[]
     allocated: number[]

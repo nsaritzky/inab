@@ -33,6 +33,10 @@ export const getTransactions = async (userID: string) =>
     },
   })
 
+export type TransactionsReturn = Awaited<
+  ReturnType<typeof getTransactions>
+>[number]
+
 export const getEnvelopes = async (userID: string) =>
   await db.envelope.findMany({
     where: { userID },
@@ -55,6 +59,21 @@ export const getEmailVerificationToken = async (token: string) => {
     },
   })
 }
+
+export const getAndThenDeleteVerificationToken = async (token: string) =>
+  await db.$transaction(async (tx) => {
+    const storedToken = await tx.emailVerification.findUniqueOrThrow({
+      where: {
+        id: token,
+      },
+    })
+    await tx.emailVerification.deleteMany({
+      where: {
+        userId: storedToken.userId,
+      },
+    })
+    return storedToken
+  })
 
 export const deleteEmailVerificationTokens = async (userId: string) => {
   await db.emailVerification.deleteMany({
@@ -84,6 +103,43 @@ export const saveEmailVerificationToken = async (
       expires: new Date(Date.now() + expiresIn),
     },
   })
+}
+
+export const getPasswordResetTokens = async (userId: string) => {
+  return await db.passwordReset.findMany({
+    where: {
+      userId,
+    },
+  })
+}
+
+export const savePasswordResetToken = async (
+  token: string,
+  expires: number,
+  userId: string,
+) => {
+  console.log(`saving token`)
+  await db.passwordReset.create({
+    data: {
+      id: token,
+      expires,
+      userId,
+    },
+  })
+}
+
+export const retrievePasswordResetToken = async (token: string) => {
+  const storedToken = db.passwordReset.findUniqueOrThrow({
+    where: {
+      id: token,
+    },
+  })
+  db.passwordReset.delete({
+    where: {
+      id: token,
+    },
+  })
+  return storedToken
 }
 
 export const verifyEmailToken = async (userId: string, token: string) => {
@@ -213,7 +269,22 @@ export const addTransactions = async (
   txns: Prisma.TransactionCreateInput[],
 ) => {
   for (const txn of txns) {
-    await db.transaction.create({ data: txn })
+    await db.transaction.create({
+      data: txn,
+    })
+  }
+}
+
+export const updateTransactions = async (
+  txns: (Prisma.TransactionUpdateInput & { plaidID: string })[],
+) => {
+  for (const txn of txns) {
+    await db.transaction.update({
+      data: txn,
+      where: {
+        plaidID: txn.plaidID,
+      },
+    })
   }
 }
 
@@ -285,6 +356,28 @@ export const getAccountNames = async (userId: string) => {
     },
   })
   return accounts.map((acct) => acct.name)
+}
+
+export const getBankAccounts = async (userId: string) => {
+  return await db.bankAccount.findMany({
+    where: {
+      userId,
+    },
+  })
+}
+
+export const setBankAccountName = async (
+  id: number,
+  userProvidedName: string,
+) => {
+  await db.bankAccount.update({
+    where: {
+      id,
+    },
+    data: {
+      userProvidedName,
+    },
+  })
 }
 
 export const savePlaidItemFn = async (
