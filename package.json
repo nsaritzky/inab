@@ -62,7 +62,7 @@
     "solid-devtools": "^0.27.7",
     "solid-icons": "^1.0.11",
     "solid-js": "^1.7.2",
-    "solid-plaid-link": "file:../solid-plaid-link",
+    "solid-plaid-link": "^0.0.0",
     "solid-start": "^0.3.7",
     "solid-transition-group": "^0.2.3",
     "solid-use-script": "^0.0.1",
