@@ -87,8 +87,8 @@ dependencies:
     specifier: ^1.7.2
     version: 1.8.3
   solid-plaid-link:
-    specifier: file:../solid-plaid-link
-    version: file:../solid-plaid-link
+    specifier: ^0.0.0
+    version: 0.0.0
   solid-start:
     specifier: ^0.3.7
     version: 0.3.7(@solidjs/meta@0.28.6)(@solidjs/router@0.8.3)(solid-js@1.8.3)(solid-start-node@0.2.32)(vite@4.5.0)
@@ -6491,6 +6491,13 @@ packages:
       csstype: 3.1.2
       seroval: 0.11.6
 
+  /solid-plaid-link@0.0.0:
+    resolution: {integrity: sha512-sKMqN17ois0TqU81Y7IfwZ6dglUyfNDuFSC0/0658Op6SIOxpUNxqnRVMmTX44N16mYjDYWsKNSWo5TSGNR/ag==}
+    dependencies:
+      solid-js: 1.8.3
+      solid-use-script: 0.0.1(solid-js@1.8.3)
+    dev: false
+
   /solid-refresh@0.5.3(solid-js@1.8.3):
     resolution: {integrity: sha512-Otg5it5sjOdZbQZJnvo99TEBAr6J7PQ5AubZLNU6szZzg3RQQ5MX04oteBIIGDs0y2Qv8aXKm9e44V8z+UnFdw==}
     peerDependencies:
@@ -7468,12 +7475,4 @@ packages:
 
   /zod@3.22.4:
     resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
-    dev: false
-
-  file:../solid-plaid-link:
-    resolution: {directory: ../solid-plaid-link, type: directory}
-    name: solid-plaid-link
-    dependencies:
-      solid-js: 1.8.3
-      solid-use-script: 0.0.1(solid-js@1.8.3)
     dev: false
