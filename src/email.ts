@@ -1,6 +1,6 @@
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses"
 
-const hostname = "http://localhost:3000"
+const hostname = process.env.URL
 const access_key = process.env.SES_ACCESS_KEY!
 
 const client = new SESClient({
@@ -85,7 +85,7 @@ const verificationEmailCommand = (email: string, token: string) =>
       Body: {
         Html: {
           Data: verificationEmailText(
-            `https://localhost:3000/email-verification/${token}`,
+            `${hostnamme}/email-verification/${token}`,
           ),
         },
         Text: {
@@ -107,9 +107,7 @@ const passwordResetEmailCommand = (email: string, token: string) =>
     Message: {
       Body: {
         Html: {
-          Data: passwordResetEmailText(
-            `https://localhost:3000/password-reset/${token}`,
-          ),
+          Data: passwordResetEmailText(`${hostname}/password-reset/${token}`),
         },
         Text: {
           Data: "This is a test message.",

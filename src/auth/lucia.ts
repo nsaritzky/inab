@@ -6,6 +6,8 @@ import { google } from "@lucia-auth/oauth/providers"
 
 const client = new PrismaClient()
 
+const hostname = process.env.URL
+
 export const auth = lucia({
   env: process.env.NODE_ENV === "production" ? "PROD" : "DEV",
   middleware: web(),
@@ -25,7 +27,7 @@ export const auth = lucia({
 export const googleAuth = google(auth, {
   clientId: process.env.GOOGLE_CLIENT_ID!,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-  redirectUri: "http://localhost:3000/auth/callback/google",
+  redirectUri: `${hostname}/auth/callback/google`,
   scope: ["email"],
 })
 

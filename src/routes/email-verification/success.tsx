@@ -1,7 +1,7 @@
 import { type Component } from "solid-js"
 import { Meta } from "solid-start"
 
-const hostname = "http://localhost:3000"
+const hostname = process.env.URL
 
 const Page: Component = () => (
   <>

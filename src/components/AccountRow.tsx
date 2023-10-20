@@ -13,7 +13,7 @@ interface Props {
   balance: number
 }
 
-const BASE_URL = "http://localhost:3000"
+const hostname = process.env.URL
 
 const AccountRow: Component<Props> = (props) => {
   const keyDownEvent = useKeyDownEvent()
@@ -25,7 +25,7 @@ const AccountRow: Component<Props> = (props) => {
   })
   const name = () => props.account.userProvidedName || props.account.name
 
-  const url = new URL("/app/transactions", BASE_URL)
+  const url = new URL("/app/transactions", hostname)
   url.searchParams.set("bankAccount", props.account.id.toString())
 
   createEffect(() => {
