@@ -64,6 +64,7 @@
     "solid-js": "^1.7.2",
     "solid-plaid-link": "^0.0.0",
     "solid-start": "^0.3.7",
+    "solid-start-netlify": "^0.3.7",
     "solid-transition-group": "^0.2.3",
     "solid-use-script": "^0.0.1",
     "undici": "^5.15.1",
