@@ -4,7 +4,7 @@ import { mapPartial } from "./utilities"
 
 export const findMatches = (txns: Transaction[]): Transaction[] => {
   const unlinkedPlaidTransactions = txns.filter(
-    (txn) => txn.linked == false && txn.source == "plaid",
+    (txn) => txn.linked == false && txn.source == "PLAID",
   )
   const findMatch =
     (ts: Transaction[]) =>
@@ -16,7 +16,7 @@ export const findMatches = (txns: Transaction[]): Transaction[] => {
     }
   const recentDate = min(unlinkedPlaidTransactions.map((t) => t.date))
   const recentUserTransactions = txns.filter(
-    (t) => isAfter(t.date, recentDate) && t.source == "user",
+    (t) => isAfter(t.date, recentDate) && t.source == "USER",
   )
   return mapPartial(
     unlinkedPlaidTransactions,

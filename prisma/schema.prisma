@@ -6,26 +6,31 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("PG_URL")
 }
 
 model Transaction {
-  id              Int         @id @default(autoincrement())
+  id              Int               @id @default(autoincrement())
   amount          Float
   envelopeName    String?
-  date            DateTime    @default(now())
-  envelope        Envelope?   @relation(fields: [envelopeName, userID], references: [name, userID])
+  date            DateTime          @default(now())
+  envelope        Envelope?         @relation(fields: [envelopeName, userID], references: [name, userID])
   payee           String?
   description     String?
   userID          String
-  user            User        @relation(fields: [userID], references: [id])
-  plaidID         String?     @unique
-  bankAccount     BankAccount @relation(fields: [userID, bankAccountName], references: [userId, name])
+  user            User              @relation(fields: [userID], references: [id])
+  plaidID         String?           @unique
+  bankAccount     BankAccount       @relation(fields: [userID, bankAccountName], references: [userId, name])
   bankAccountName String
-  source          String // "plaid" | "user"
+  source          TransactionSource
   pending         Boolean
-  linked          Boolean     @default(false)
+  linked          Boolean           @default(false)
+}
+
+enum TransactionSource {
+  PLAID
+  USER
 }
 
 // Facilitate user renaming of payees
@@ -48,16 +53,22 @@ model Envelope {
 }
 
 model Goal {
-  type         String // "Monthly", "Yearly", or "Weekly". Should be an enum but SQLite
+  type         GoalFrequency
   amount       Float
   begin        Int
   due          DateTime
   envelopeName String
-  envelope     Envelope @relation(fields: [envelopeName, userID], references: [name, userID])
+  envelope     Envelope      @relation(fields: [envelopeName, userID], references: [name, userID])
   userID       String
-  user         User     @relation(fields: [userID], references: [id])
+  user         User          @relation(fields: [userID], references: [id])
 
   @@unique([envelopeName, userID])
+}
+
+enum GoalFrequency {
+  MONTHLY
+  YEARLY
+  WEEKLY
 }
 
 model BankAccount {

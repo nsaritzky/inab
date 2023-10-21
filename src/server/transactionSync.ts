@@ -58,7 +58,7 @@ export const mapTransaction = (userID: string) => (txn: PlaidTransaction) =>
     amount: -1 * txn.amount,
     payee: txn.merchant_name || txn.name,
     description: null,
-    source: "plaid",
+    source: "PLAID",
     pending: txn.pending,
     date: txn.authorized_date
       ? new Date(txn.authorized_date)
