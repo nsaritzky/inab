@@ -4,7 +4,7 @@
     "dev": "solid-start dev",
     "build": "solid-start build",
     "start": "solid-start start",
-    "postinstall": "prisma generate",
+    "postinstall": "prisma generate && prisma migrate deploy",
     "test:int": "./scripts/run-integration.sh",
     "test:int:ui": "./scripts/run-integration.sh --ui"
   },
