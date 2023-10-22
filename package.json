@@ -33,7 +33,8 @@
     "vite": "^4.1.4",
     "vite-plugin-solid": "^2.7.0",
     "vitest": "^0.33.0",
-    "vitest-mock-extended": "^1.1.4"
+    "vitest-mock-extended": "^1.1.4",
+    "wrangler": "^3.14.0"
   },
   "dependencies": {
     "@auth/core": "^0.17.0",
@@ -65,7 +66,6 @@
     "solid-js": "^1.7.2",
     "solid-plaid-link": "^0.0.0",
     "solid-start": "^0.3.7",
-    "solid-start-netlify": "^0.3.7",
     "solid-transition-group": "^0.2.3",
     "solid-use-script": "^0.0.1",
     "undici": "^5.15.1",
