@@ -12,7 +12,7 @@ export default defineConfig({
   //     inline: [/solid-js/, /@solidjs/],
   //   },
   // },
-  plugins: [solid({ adapter: cloudflare() }), devtools({ autoname: true })],
+  plugins: [solid({ adapter: cloudflare({}) }), devtools({ autoname: true })],
   optimizeDeps: {
     exclude: ["@modular-forms/solid"],
   },
