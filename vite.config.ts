@@ -2,7 +2,7 @@
 import solid from "solid-start/vite"
 import { defineConfig } from "vite"
 import devtools from "solid-devtools/vite"
-import netlify from "solid-start-netlify"
+import cloudflare from "solid-start-cloudflare-pages"
 
 export default defineConfig({
   // test: {
@@ -12,7 +12,7 @@ export default defineConfig({
   //     inline: [/solid-js/, /@solidjs/],
   //   },
   // },
-  plugins: [solid({ adapter: netlify() }), devtools({ autoname: true })],
+  plugins: [solid({ adapter: cloudflare() }), devtools({ autoname: true })],
   optimizeDeps: {
     exclude: ["@modular-forms/solid"],
   },
